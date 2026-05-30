@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 const db = require('./database/db')
+const license = require('./license')
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -224,4 +225,18 @@ ipcMain.handle('orders:stats', () => {
     FROM orders
     WHERE date(created_at) = date('now') AND status = 'completed'
   `)
+})
+
+// ── License ────────────────────────────────────────────────────────
+
+ipcMain.handle('license:check', () => {
+  return license.checkLicense()
+})
+
+ipcMain.handle('license:activate', (_, key) => {
+  return license.saveLicense(key)
+})
+
+ipcMain.handle('license:info', () => {
+  return license.getLicenseInfo()
 })

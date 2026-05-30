@@ -6,6 +6,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   run:   (sql, params) => ipcRenderer.invoke('db:run',   sql, params),
   get:   (sql, params) => ipcRenderer.invoke('db:get',   sql, params),
 
+// Add inside contextBridge.exposeInMainWorld:
+checkLicense:    ()    => ipcRenderer.invoke('license:check'),
+activateLicense: (key) => ipcRenderer.invoke('license:activate', key),
+getLicenseInfo:  ()    => ipcRenderer.invoke('license:info'),
+
   // Auth
   rfidLogin: (uid) => ipcRenderer.invoke('auth:rfid', uid),
   pinLogin: (pin) => ipcRenderer.invoke('auth:pin', pin),
