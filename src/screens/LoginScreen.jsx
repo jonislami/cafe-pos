@@ -82,10 +82,7 @@ export default function LoginScreen({ onLogin }) {
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-slate-50 font-sans p-6">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
         <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
-            ☕
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">CaféPOS</h1>
+          <h1 className="text-4xl font-black tracking-tighter mb-2 text-orange-500">CaféPOS</h1>
           <p className="text-slate-400 text-sm">Enter your PIN to start your shift</p>
         </div>
 

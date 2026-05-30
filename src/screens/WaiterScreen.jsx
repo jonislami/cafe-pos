@@ -131,7 +131,6 @@ export default function WaiterScreen({ user, onLogout }) {
 
         {selectedTable && (
           <div className="px-4 py-1.5 bg-orange-500/10 border border-orange-500/30 rounded-full flex items-center gap-2">
-            <span className="text-orange-500 text-sm">🪑</span>
             <span className="text-orange-500 font-bold text-sm uppercase tracking-wider">{selectedTable.name}</span>
           </div>
         )}
@@ -160,7 +159,7 @@ export default function WaiterScreen({ user, onLogout }) {
                 <button
                   key={t.id}
                   onClick={() => setSelectedTable(t)}
-                  className={`relative p-6 rounded-2xl border transition-all duration-200 group ${
+                  className={`relative p-4 rounded-xl border transition-all duration-200 group ${
                     isSelected
                       ? 'bg-orange-500/20 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.2)]'
                       : hasItems
@@ -168,8 +167,7 @@ export default function WaiterScreen({ user, onLogout }) {
                         : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
                   }`}
                 >
-                  <div className={`text-3xl mb-2 transition-transform duration-300 group-hover:scale-110 ${isSelected ? 'scale-110' : ''}`}>🪑</div>
-                  <div className={`font-bold ${isSelected ? 'text-orange-500' : 'text-slate-200'}`}>{t.name}</div>
+                  <div className={`font-bold text-lg ${isSelected ? 'text-orange-500' : 'text-slate-200'}`}>{t.name}</div>
                   <div className={`text-[10px] mt-1 font-medium uppercase tracking-tighter ${hasItems ? 'text-emerald-500' : 'text-slate-600'}`}>
                     {hasItems ? `${(orders[t.id] || []).reduce((s, i) => s + i.qty, 0)} items` : 'Free'}
                   </div>
@@ -202,16 +200,15 @@ export default function WaiterScreen({ user, onLogout }) {
               </nav>
 
               {/* Products grid */}
-              <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 content-start">
+              <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 content-start">
                 {filtered.map(p => (
                   <button
                     key={p.id}
                     onClick={() => addProduct(p)}
-                    className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:border-slate-600 hover:bg-slate-800/50 transition-all group active:scale-95"
+                    className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 hover:border-orange-500/50 hover:bg-slate-800/50 transition-all text-left flex flex-col justify-between h-24 group active:scale-[0.98]"
                   >
-                    <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{p.icon}</div>
-                    <div className="text-sm font-bold text-slate-200 line-clamp-1">{p.name}</div>
-                    <div className="text-orange-500 font-bold mt-1 text-lg">€{Number(p.price).toFixed(2)}</div>
+                    <div className="text-sm font-bold text-slate-200 line-clamp-2">{p.name}</div>
+                    <div className="text-orange-500 font-black text-base mt-auto">€{Number(p.price).toFixed(2)}</div>
                   </button>
                 ))}
               </div>
@@ -227,15 +224,13 @@ export default function WaiterScreen({ user, onLogout }) {
                 >Clear All</button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
                 {currentOrder.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-600 opacity-40">
-                    <div className="text-6xl mb-4">🛒</div>
-                    <p className="font-bold uppercase tracking-widest text-xs">Basket is empty</p>
+                  <div className="h-full flex flex-col items-center justify-center text-slate-600 opacity-40 text-center">
+                    <p className="font-bold uppercase tracking-widest text-[10px]">No items selected</p>
                   </div>
                 ) : currentOrder.map(i => (
-                  <div key={i.name} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-center gap-3">
-                    <span className="text-2xl">{i.icon}</span>
+                  <div key={i.name} className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold text-slate-200 truncate">{i.name}</div>
                       <div className="text-[10px] text-slate-500 font-medium mt-0.5">€{i.price.toFixed(2)} / unit</div>
