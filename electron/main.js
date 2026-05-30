@@ -50,13 +50,6 @@ ipcMain.handle('auth:rfid', (_, uid) => {
   )
 })
 
-ipcMain.handle('auth:pin', (_, pin) => {
-  return db.get(
-    'SELECT * FROM employees WHERE pin = ? AND status = "active"',
-    [pin]
-  )
-})
-
 // ── Products ───────────────────────────────────────────
 
 ipcMain.handle('products:all', () => {
@@ -89,15 +82,15 @@ ipcMain.handle('employees:all', () => {
 
 ipcMain.handle('employees:add', (_, e) => {
   return db.run(
-    'INSERT INTO employees (name, role, card_uid, pin, status) VALUES (?, ?, ?, ?, ?)',
-    [e.name, e.role, e.card_uid || null, e.pin || null, e.status || 'active']
+    'INSERT INTO employees (name, role, card_uid, status) VALUES (?, ?, ?, ?)',
+    [e.name, e.role, e.card_uid || null, e.status || 'active']
   )
 })
 
 ipcMain.handle('employees:update', (_, e) => {
   return db.run(
-    'UPDATE employees SET name=?, role=?, card_uid=?, pin=?, status=? WHERE id=?',
-    [e.name, e.role, e.card_uid || null, e.pin || null, e.status, e.id]
+    'UPDATE employees SET name=?, role=?, card_uid=?, status=? WHERE id=?',
+    [e.name, e.role, e.card_uid || null, e.status, e.id]
   )
 })
 

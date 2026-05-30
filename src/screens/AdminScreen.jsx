@@ -1,101 +1,84 @@
 import { useState, useEffect } from 'react'
 
-const TABS = ['Dashboard', 'Products', 'Employees', 'Tables', 'Reports', 'Settings']
+const TABS = ['Dashboard','Products','Employees','Tables','Reports','Settings']
 
 export default function AdminScreen({ user, onLogout }) {
   const [tab, setTab] = useState('Dashboard')
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-50 overflow-hidden font-sans">
+    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#0f1117' }}>
 
       {/* Top bar */}
-      <header className="h-16 px-6 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between shrink-0 backdrop-blur-md">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center font-bold text-blue-500">
-            {user.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+      <div style={{
+        padding:'10px 16px', background:'#181b24',
+        borderBottom:'1px solid #2d3148',
+        display:'flex', alignItems:'center', justifyContent:'space-between'
+      }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{
+            width:32, height:32, borderRadius:'50%',
+            background:'rgba(59,130,246,0.2)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:12, fontWeight:600, color:'#3b82f6'
+          }}>
+            {user.name.split(' ').map(n=>n[0]).join('').slice(0,2)}
           </div>
           <div>
-            <div className="text-sm font-semibold">{user.name}</div>
-            <div className="text-xs text-slate-500 leading-none">Administrator • Control Center</div>
+            <div style={{ fontSize:13, fontWeight:500 }}>{user.name}</div>
+            <div style={{ fontSize:10, color:'#64748b' }}>Administrator</div>
           </div>
         </div>
-        <button
-          onClick={onLogout}
-          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 transition-colors text-sm font-medium"
-        >
-          Logout
-        </button>
-      </header>
+        <button onClick={onLogout} style={{
+          padding:'5px 12px', background:'#252836',
+          border:'1px solid #2d3148', borderRadius:6,
+          color:'#94a3b8', cursor:'pointer', fontSize:12
+        }}>Logout</button>
+      </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
 
         {/* Sidebar */}
-        <aside className="w-64 bg-slate-900/30 border-r border-slate-800 flex flex-col py-6 shrink-0">
-          <div className="px-6 mb-6">
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[.2em]">Management</h2>
-          </div>
-          <nav className="flex-1 space-y-1 px-3">
-            {TABS.map(t => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-bold transition-all group ${
-                  tab === t
-                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                }`}
-              >
-                <span className={`text-lg transition-transform group-hover:scale-110 ${tab === t ? '' : 'grayscale opacity-70'}`}>
-                  {t === 'Dashboard' && '📊'}
-                  {t === 'Products'  && '📦'}
-                  {t === 'Employees' && '👥'}
-                  {t === 'Tables'    && '🪑'}
-                  {t === 'Reports'   && '📈'}
-                  {t === 'Settings'  && '⚙️'}
-                </span>
-                {t}
-              </button>
-            ))}
-          </nav>
-
-          <div className="px-6 mt-auto">
-            <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-2xl">
-              <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">System Status</div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-xs font-medium text-slate-300">Operational</span>
-              </div>
+        <div style={{
+          width:180, background:'#13151f',
+          borderRight:'1px solid #2d3148', padding:'16px 0'
+        }}>
+          {TABS.map(t => (
+            <div key={t} onClick={() => setTab(t)} style={{
+              padding:'10px 20px', fontSize:13, cursor:'pointer',
+              display:'flex', alignItems:'center', gap:10,
+              color:      tab===t ? '#f97316' : '#94a3b8',
+              background: tab===t ? 'rgba(249,115,22,0.08)' : 'transparent',
+              borderRight: tab===t ? '3px solid #f97316' : '3px solid transparent'
+            }}>
+              {t==='Dashboard' && '📊'}
+              {t==='Products'  && '📦'}
+              {t==='Employees' && '👥'}
+              {t==='Tables'    && '🪑'}
+              {t==='Reports'   && '📈'}
+              {t==='Settings'  && '⚙️'}
+              {' '}{t}
             </div>
-          </div>
-        </aside>
+          ))}
+        </div>
 
-        {/* Content Area */}
-        <main className="flex-1 overflow-y-auto bg-slate-950/50 p-8 custom-scrollbar">
-          <div className="max-w-6xl mx-auto">
-            <header className="mb-10">
-              <h1 className="text-3xl font-black tracking-tight mb-2">{tab}</h1>
-              <p className="text-slate-500 text-sm">Overview and management of your POS {tab.toLowerCase()}.</p>
-            </header>
-
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {tab === 'Dashboard' && <Dashboard />}
-              {tab === 'Products'  && <Products />}
-              {tab === 'Employees' && <Employees />}
-              {tab === 'Tables'    && <TablesTab />}
-              {tab === 'Reports'   && <Reports />}
-              {tab === 'Settings'  && <Settings />}
-            </div>
-          </div>
-        </main>
+        {/* Content */}
+        <div style={{ flex:1, overflowY:'auto', padding:24 }}>
+          {tab==='Dashboard' && <Dashboard />}
+          {tab==='Products'  && <Products />}
+          {tab==='Employees' && <Employees />}
+          {tab==='Tables'    && <TablesTab />}
+          {tab==='Reports'   && <Reports />}
+          {tab==='Settings'  && <Settings />}
+        </div>
       </div>
     </div>
   )
 }
 
-// ── Components ──────────────────────────────────────────────────────
+// ── Dashboard ──────────────────────────────────────────────────────
 
 function Dashboard() {
-  const [stats, setStats] = useState({ total_orders: 0, total_revenue: 0, avg_order: 0 })
+  const [stats, setStats] = useState({ total_orders:0, total_revenue:0, avg_order:0 })
 
   useEffect(() => {
     window.electronAPI.getOrderStats()
@@ -104,23 +87,21 @@ function Dashboard() {
   }, [])
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12 }}>
         {[
-          { label: "Today's Revenue", value: `€${Number(stats.total_revenue).toFixed(2)}`, icon: '💰', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Orders Today', value: stats.total_orders, icon: '🛒', color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          { label: 'Avg Order', value: `€${Number(stats.avg_order).toFixed(2)}`, icon: '📊', color: 'text-purple-500', bg: 'bg-purple-500/10' },
-          { label: 'Active Waiters', value: '3', icon: '👤', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+          { label:"Today's Revenue", value:`€${Number(stats.total_revenue).toFixed(2)}`, sub:'Live from database' },
+          { label:'Orders Today',    value:stats.total_orders, sub:'Completed orders' },
+          { label:'Avg Order',       value:`€${Number(stats.avg_order).toFixed(2)}`, sub:'Per order today' },
+          { label:'System',          value:'Online', sub:'All systems OK' },
         ].map(s => (
-          <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 hover:border-slate-700 transition-all group">
-            <div className="flex justify-between items-start mb-4">
-              <span className={`w-12 h-12 rounded-2xl ${s.bg} flex items-center justify-center text-xl group-hover:scale-110 transition-transform`}>
-                {s.icon}
-              </span>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mt-2">Live</span>
-            </div>
-            <div className="text-3xl font-black mb-1">{s.value}</div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{s.label}</div>
+          <div key={s.label} style={{
+            background:'#1a1d2e', border:'1px solid #2d3148',
+            borderRadius:12, padding:16
+          }}>
+            <div style={{ fontSize:11, color:'#64748b', marginBottom:8 }}>{s.label}</div>
+            <div style={{ fontSize:24, fontWeight:600 }}>{s.value}</div>
+            <div style={{ fontSize:11, color:'#22c55e', marginTop:4 }}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -140,42 +121,459 @@ function RecentOrders() {
   }, [])
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-      <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-        <h3 className="font-bold text-lg">Recent Transactions</h3>
-        <button className="text-xs font-bold text-orange-500 hover:underline uppercase tracking-widest">View All</button>
+    <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12 }}>
+      <div style={{ padding:'14px 18px', borderBottom:'1px solid #2d3148', fontSize:14, fontWeight:500 }}>
+        Recent Orders Today
       </div>
-      <div className="overflow-x-auto">
-        {orders.length === 0 ? (
-          <div className="p-20 text-center flex flex-col items-center opacity-40">
-            <div className="text-5xl mb-4">📋</div>
-            <p className="font-bold uppercase tracking-widest text-xs">No orders processed today</p>
-          </div>
-        ) : (
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-slate-950/50">
-                {['Time', 'Table', 'Waiter', 'Status', 'Total'].map(h => (
-                  <th key={h} className="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">{h}</th>
-                ))}
+      {orders.length === 0 ? (
+        <div style={{ padding:24, textAlign:'center', color:'#64748b', fontSize:13 }}>
+          No orders yet today
+        </div>
+      ) : (
+        <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+          <thead>
+            <tr>{['Time','Table','Waiter','Total'].map(h => (
+              <th key={h} style={{ padding:'10px 18px', textAlign:'left', fontSize:11, color:'#64748b', borderBottom:'1px solid #2d3148' }}>{h}</th>
+            ))}</tr>
+          </thead>
+          <tbody>
+            {orders.slice(0,10).map(o => (
+              <tr key={o.id}>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)', color:'#64748b', fontSize:11 }}>
+                  {new Date(o.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+                </td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>
+                  {o.table_name || '—'}
+                </td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>
+                  {o.waiter_name || '—'}
+                </td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)', color:'#f97316', fontWeight:600 }}>
+                  €{Number(o.total).toFixed(2)}
+                </td>
               </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
+// ── Products ───────────────────────────────────────────────────────
+
+function Products() {
+  const [items, setItems]       = useState([])
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm]         = useState({ name:'', category:'coffee', price:'', stock:'', icon:'☕' })
+
+  useEffect(() => { loadProducts() }, [])
+
+  async function loadProducts() {
+    try {
+      const prods = await window.electronAPI.getProducts()
+      setItems(prods)
+    } catch(e) { console.error(e) }
+  }
+
+  async function handleAdd() {
+    if (!form.name || !form.price) return
+    await window.electronAPI.addProduct({
+      ...form,
+      price: parseFloat(form.price),
+      stock: parseInt(form.stock) || 0
+    })
+    setForm({ name:'', category:'coffee', price:'', stock:'', icon:'☕' })
+    setShowForm(false)
+    loadProducts()
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Delete this product?')) return
+    await window.electronAPI.deleteProduct(id)
+    loadProducts()
+  }
+
+  const inp = {
+    width:'100%', padding:'8px 10px', background:'#252836',
+    border:'1px solid #2d3148', borderRadius:7,
+    color:'#f1f5f9', fontSize:13
+  }
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+
+      {showForm && (
+        <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12, padding:18 }}>
+          <div style={{ fontSize:14, fontWeight:500, marginBottom:14 }}>➕ Add New Product</div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+            <div>
+              <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>Name</div>
+              <input style={inp} value={form.name}
+                onChange={e => setForm(p=>({...p, name:e.target.value}))}
+                placeholder="e.g. Espresso" />
+            </div>
+            <div>
+              <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>Icon (emoji)</div>
+              <input style={inp} value={form.icon}
+                onChange={e => setForm(p=>({...p, icon:e.target.value}))}
+                placeholder="☕" />
+            </div>
+            <div>
+              <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>Category</div>
+              <select style={inp} value={form.category}
+                onChange={e => setForm(p=>({...p, category:e.target.value}))}>
+                <option value="coffee">Coffee</option>
+                <option value="drinks">Drinks</option>
+                <option value="food">Food</option>
+                <option value="alcohol">Alcohol</option>
+                <option value="desserts">Desserts</option>
+              </select>
+            </div>
+            <div>
+              <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>Price (€)</div>
+              <input style={inp} type="number" step="0.10" value={form.price}
+                onChange={e => setForm(p=>({...p, price:e.target.value}))}
+                placeholder="1.50" />
+            </div>
+            <div>
+              <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>Stock</div>
+              <input style={inp} type="number" value={form.stock}
+                onChange={e => setForm(p=>({...p, stock:e.target.value}))}
+                placeholder="99" />
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:10, marginTop:14 }}>
+            <button onClick={handleAdd} style={{
+              padding:'9px 20px', background:'#f97316', border:'none',
+              borderRadius:7, color:'#fff', cursor:'pointer', fontSize:13
+            }}>Save Product</button>
+            <button onClick={() => setShowForm(false)} style={{
+              padding:'9px 20px', background:'#252836', border:'1px solid #2d3148',
+              borderRadius:7, color:'#94a3b8', cursor:'pointer', fontSize:13
+            }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12 }}>
+        <div style={{ padding:'14px 18px', borderBottom:'1px solid #2d3148', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <span style={{ fontSize:14, fontWeight:500 }}>Products ({items.length})</span>
+          <button onClick={() => setShowForm(true)} style={{
+            padding:'6px 14px', background:'#f97316', border:'none',
+            borderRadius:7, color:'#fff', fontSize:12, cursor:'pointer'
+          }}>+ Add Product</button>
+        </div>
+        <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+          <thead>
+            <tr>{['Product','Category','Price','Stock','Actions'].map(h => (
+              <th key={h} style={{ padding:'10px 18px', textAlign:'left', fontSize:11, color:'#64748b', borderBottom:'1px solid #2d3148' }}>{h}</th>
+            ))}</tr>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
+              <tr><td colSpan={5} style={{ padding:24, textAlign:'center', color:'#64748b' }}>No products yet</td></tr>
+            ) : items.map(i => (
+              <tr key={i.id}>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>{i.icon} {i.name}</td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)', color:'#64748b' }}>{i.category}</td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)', color:'#f97316' }}>€{Number(i.price).toFixed(2)}</td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>{i.stock}</td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>
+                  <button onClick={() => handleDelete(i.id)} style={{
+                    padding:'3px 10px', background:'#252836',
+                    border:'1px solid #2d3148', borderRadius:5,
+                    color:'#ef4444', cursor:'pointer', fontSize:11
+                  }}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ── Employees ──────────────────────────────────────────────────────
+
+function Employees() {
+  const [emps, setEmps]         = useState([])
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm]         = useState({ name:'', role:'waiter', card_uid:'', status:'active' })
+
+  useEffect(() => { loadEmployees() }, [])
+
+  async function loadEmployees() {
+    try {
+      const data = await window.electronAPI.getEmployees()
+      setEmps(data)
+    } catch(e) { console.error(e) }
+  }
+
+  async function handleAdd() {
+    if (!form.name) return
+    await window.electronAPI.addEmployee(form)
+    setForm({ name:'', role:'waiter', card_uid:'', status:'active' })
+    setShowForm(false)
+    loadEmployees()
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Remove this employee?')) return
+    await window.electronAPI.deleteEmployee(id)
+    loadEmployees()
+  }
+
+  const inp = {
+    width:'100%', padding:'8px 10px', background:'#252836',
+    border:'1px solid #2d3148', borderRadius:7,
+    color:'#f1f5f9', fontSize:13
+  }
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+
+      {showForm && (
+        <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12, padding:18 }}>
+          <div style={{ fontSize:14, fontWeight:500, marginBottom:14 }}>➕ Add New Employee</div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+            <div>
+              <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>Full Name</div>
+              <input style={inp} value={form.name}
+                onChange={e => setForm(p=>({...p, name:e.target.value}))}
+                placeholder="e.g. John Smith" />
+            </div>
+            <div>
+              <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>Role</div>
+              <select style={inp} value={form.role}
+                onChange={e => setForm(p=>({...p, role:e.target.value}))}>
+                <option value="waiter">Waiter</option>
+                <option value="admin">Admin</option>
+                <option value="bartender">Bartender</option>
+              </select>
+            </div>
+            <div>
+              <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>RFID Card UID (optional for now)</div>
+              <input style={inp} value={form.card_uid}
+                onChange={e => setForm(p=>({...p, card_uid:e.target.value}))}
+                placeholder="Add later when card arrives" />
+            </div>
+            <div>
+              <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>Status</div>
+              <select style={inp} value={form.status}
+                onChange={e => setForm(p=>({...p, status:e.target.value}))}>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:10, marginTop:14 }}>
+            <button onClick={handleAdd} style={{
+              padding:'9px 20px', background:'#f97316', border:'none',
+              borderRadius:7, color:'#fff', cursor:'pointer', fontSize:13
+            }}>Save Employee</button>
+            <button onClick={() => setShowForm(false)} style={{
+              padding:'9px 20px', background:'#252836', border:'1px solid #2d3148',
+              borderRadius:7, color:'#94a3b8', cursor:'pointer', fontSize:13
+            }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12 }}>
+        <div style={{ padding:'14px 18px', borderBottom:'1px solid #2d3148', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <span style={{ fontSize:14, fontWeight:500 }}>Employees ({emps.length})</span>
+          <button onClick={() => setShowForm(true)} style={{
+            padding:'6px 14px', background:'#f97316', border:'none',
+            borderRadius:7, color:'#fff', fontSize:12, cursor:'pointer'
+          }}>+ Add Employee</button>
+        </div>
+        <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+          <thead>
+            <tr>{['Name','Role','Card UID','Status','Actions'].map(h => (
+              <th key={h} style={{ padding:'10px 18px', textAlign:'left', fontSize:11, color:'#64748b', borderBottom:'1px solid #2d3148' }}>{h}</th>
+            ))}</tr>
+          </thead>
+          <tbody>
+            {emps.length === 0 ? (
+              <tr><td colSpan={5} style={{ padding:24, textAlign:'center', color:'#64748b' }}>No employees yet</td></tr>
+            ) : emps.map(e => (
+              <tr key={e.id}>
+                <td style={{ padding:'10px 18px', fontWeight:500, borderBottom:'1px solid rgba(45,49,72,0.5)' }}>{e.name}</td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>
+                  <span style={{
+                    padding:'3px 9px', borderRadius:20, fontSize:10, fontWeight:500,
+                    background: e.role==='admin' ? 'rgba(59,130,246,0.12)' : 'rgba(249,115,22,0.12)',
+                    color:      e.role==='admin' ? '#3b82f6' : '#f97316'
+                  }}>{e.role}</span>
+                </td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)', fontFamily:'monospace', fontSize:11, color:'#64748b' }}>
+                  {e.card_uid || '— no card yet'}
+                </td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>
+                  <span style={{
+                    padding:'3px 9px', borderRadius:20, fontSize:10,
+                    background: e.status==='active' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                    color:      e.status==='active' ? '#22c55e' : '#ef4444'
+                  }}>{e.status}</span>
+                </td>
+                <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>
+                  <button onClick={() => handleDelete(e.id)} style={{
+                    padding:'3px 10px', background:'#252836',
+                    border:'1px solid #2d3148', borderRadius:5,
+                    color:'#ef4444', cursor:'pointer', fontSize:11
+                  }}>Remove</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ── Tables ─────────────────────────────────────────────────────────
+
+function TablesTab() {
+  const [tables, setTables]     = useState([])
+  const [newName, setNewName]   = useState('')
+  const [showForm, setShowForm] = useState(false)
+
+  useEffect(() => { loadTables() }, [])
+
+  async function loadTables() {
+    try {
+      const data = await window.electronAPI.getTables()
+      setTables(data)
+    } catch(e) { console.error(e) }
+  }
+
+  async function handleAdd() {
+    if (!newName.trim()) return
+    await window.electronAPI.addTable(newName.trim())
+    setNewName('')
+    setShowForm(false)
+    loadTables()
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Remove this table?')) return
+    await window.electronAPI.deleteTable(id)
+    loadTables()
+  }
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+
+      {showForm && (
+        <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12, padding:18 }}>
+          <div style={{ fontSize:14, fontWeight:500, marginBottom:14 }}>➕ Add New Table</div>
+          <div style={{ display:'flex', gap:10 }}>
+            <input
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              placeholder="e.g. Table 11 or VIP Room"
+              style={{
+                flex:1, padding:'8px 10px', background:'#252836',
+                border:'1px solid #2d3148', borderRadius:7,
+                color:'#f1f5f9', fontSize:13
+              }}
+            />
+            <button onClick={handleAdd} style={{
+              padding:'8px 20px', background:'#f97316', border:'none',
+              borderRadius:7, color:'#fff', cursor:'pointer', fontSize:13
+            }}>Add</button>
+            <button onClick={() => setShowForm(false)} style={{
+              padding:'8px 16px', background:'#252836', border:'1px solid #2d3148',
+              borderRadius:7, color:'#94a3b8', cursor:'pointer', fontSize:13
+            }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12 }}>
+        <div style={{ padding:'14px 18px', borderBottom:'1px solid #2d3148', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <span style={{ fontSize:14, fontWeight:500 }}>Tables ({tables.length})</span>
+          <button onClick={() => setShowForm(true)} style={{
+            padding:'6px 14px', background:'#f97316', border:'none',
+            borderRadius:7, color:'#fff', fontSize:12, cursor:'pointer'
+          }}>+ Add Table</button>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(120px,1fr))', gap:10, padding:16 }}>
+          {tables.map(t => (
+            <div key={t.id} style={{
+              background:'#252836', border:'1px solid #2d3148',
+              borderRadius:10, padding:14, textAlign:'center', position:'relative'
+            }}>
+              <div style={{ fontSize:24, marginBottom:6 }}>🪑</div>
+              <div style={{ fontSize:13, fontWeight:600 }}>{t.name}</div>
+              <div style={{ fontSize:10, color:'#22c55e', marginTop:4 }}>● Active</div>
+              <button onClick={() => handleDelete(t.id)} style={{
+                position:'absolute', top:6, right:6,
+                width:18, height:18, background:'transparent',
+                border:'none', color:'#ef4444', cursor:'pointer', fontSize:14,
+                display:'flex', alignItems:'center', justifyContent:'center'
+              }}>×</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Reports ────────────────────────────────────────────────────────
+
+function Reports() {
+  const [stats, setStats]   = useState({ total_orders:0, total_revenue:0, avg_order:0 })
+  const [orders, setOrders] = useState([])
+
+  useEffect(() => {
+    window.electronAPI.getOrderStats().then(s => { if(s) setStats(s) }).catch(console.error)
+    window.electronAPI.getTodayOrders().then(o => setOrders(o||[])).catch(console.error)
+  }, [])
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12 }}>
+        {[
+          { label:"Today's Revenue", value:`€${Number(stats.total_revenue).toFixed(2)}` },
+          { label:'Total Orders',    value:stats.total_orders },
+          { label:'Avg Order Value', value:`€${Number(stats.avg_order).toFixed(2)}` },
+        ].map(s => (
+          <div key={s.label} style={{
+            background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12, padding:16
+          }}>
+            <div style={{ fontSize:11, color:'#64748b', marginBottom:8 }}>{s.label}</div>
+            <div style={{ fontSize:26, fontWeight:600 }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12 }}>
+        <div style={{ padding:'14px 18px', borderBottom:'1px solid #2d3148', fontSize:14, fontWeight:500 }}>
+          All Orders Today ({orders.length})
+        </div>
+        {orders.length === 0 ? (
+          <div style={{ padding:24, textAlign:'center', color:'#64748b', fontSize:13 }}>No orders today yet</div>
+        ) : (
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+            <thead>
+              <tr>{['Time','Table','Waiter','Total'].map(h => (
+                <th key={h} style={{ padding:'10px 18px', textAlign:'left', fontSize:11, color:'#64748b', borderBottom:'1px solid #2d3148' }}>{h}</th>
+              ))}</tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {orders.slice(0, 8).map(o => (
-                <tr key={o.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-slate-500 uppercase">
-                    {new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <tbody>
+              {orders.map(o => (
+                <tr key={o.id}>
+                  <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)', color:'#64748b', fontSize:11 }}>
+                    {new Date(o.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-200">
-                    {o.table_name || '—'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-slate-400">
-                    {o.waiter_name || '—'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-tighter">Completed</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-black text-orange-500 text-right">
+                  <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>{o.table_name||'—'}</td>
+                  <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)' }}>{o.waiter_name||'—'}</td>
+                  <td style={{ padding:'10px 18px', borderBottom:'1px solid rgba(45,49,72,0.5)', color:'#f97316', fontWeight:600 }}>
                     €{Number(o.total).toFixed(2)}
                   </td>
                 </tr>
@@ -188,459 +586,65 @@ function RecentOrders() {
   )
 }
 
-function Products() {
-  const [items, setItems] = useState([])
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', category: 'coffee', price: '', stock: '', icon: '☕' })
-
-  useEffect(() => { loadProducts() }, [])
-
-  async function loadProducts() {
-    try {
-      const prods = await window.electronAPI.getProducts()
-      setItems(prods)
-    } catch (e) { console.error(e) }
-  }
-
-  async function handleAdd() {
-    if (!form.name || !form.price) return
-    await window.electronAPI.addProduct({
-      ...form,
-      price: parseFloat(form.price),
-      stock: parseInt(form.stock) || 0
-    })
-    setForm({ name: '', category: 'coffee', price: '', stock: '', icon: '☕' })
-    setShowForm(false)
-    loadProducts()
-  }
-
-  async function handleDelete(id) {
-    if (!window.confirm('Are you sure? This will remove the product from active menu.')) return
-    await window.electronAPI.deleteProduct(id)
-    loadProducts()
-  }
-
-  const inpClass = "w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all outline-none"
-  const labelClass = "block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 px-1"
-
-  return (
-    <div className="space-y-8">
-      {showForm && (
-        <div className="bg-slate-900 border border-orange-500/30 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-          <h3 className="font-bold text-xl mb-6">Create New Menu Item</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label className={labelClass}>Product Name</label>
-              <input className={inpClass} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Double Espresso" />
-            </div>
-            <div>
-              <label className={labelClass}>Emoji Icon</label>
-              <input className={inpClass} value={form.icon} onChange={e => setForm(p => ({ ...p, icon: e.target.value }))} placeholder="☕" />
-            </div>
-            <div>
-              <label className={labelClass}>Category</label>
-              <select className={inpClass} value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
-                <option value="coffee">Coffee</option>
-                <option value="drinks">Drinks</option>
-                <option value="food">Food</option>
-                <option value="alcohol">Alcohol</option>
-                <option value="desserts">Desserts</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Price (€)</label>
-              <input className={inpClass} type="number" step="0.10" value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} placeholder="3.50" />
-            </div>
-            <div>
-              <label className={labelClass}>Initial Stock</label>
-              <input className={inpClass} type="number" value={form.stock} onChange={e => setForm(p => ({ ...p, stock: e.target.value }))} placeholder="100" />
-            </div>
-          </div>
-          <div className="flex gap-4 mt-10">
-            <button onClick={handleAdd} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-orange-500/20 transition-all">
-              Save Item
-            </button>
-            <button onClick={() => setShowForm(false)} className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-bold text-sm transition-all">
-              Discard
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <h3 className="font-bold text-lg">Active Menu ({items.length})</h3>
-          <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-all">
-            + New Item
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-slate-950/50">
-                {['Item', 'Category', 'Price', 'Stock', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {items.map(i => (
-                <tr key={i.id} className="hover:bg-slate-800/30 transition-colors group">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{i.icon}</span>
-                      <span className="font-bold text-slate-200">{i.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">{i.category}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-black text-orange-500">
-                    €{Number(i.price).toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-slate-400 font-mono text-xs">
-                    {i.stock}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase tracking-tighter">Active</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button onClick={() => handleDelete(i.id)} className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                      Archive
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function Employees() {
-  const [emps, setEmps] = useState([])
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', role: 'waiter', card_uid: '', pin: '', status: 'active' })
-
-  useEffect(() => { loadEmployees() }, [])
-
-  async function loadEmployees() {
-    try {
-      const data = await window.electronAPI.getEmployees()
-      setEmps(data)
-    } catch (e) { console.error(e) }
-  }
-
-  async function handleAdd() {
-    if (!form.name) return
-    await window.electronAPI.addEmployee(form)
-    setForm({ name: '', role: 'waiter', card_uid: '', pin: '', status: 'active' })
-    setShowForm(false)
-    loadEmployees()
-  }
-
-  async function handleDelete(id) {
-    if (!window.confirm('Deactivate this employee account?')) return
-    await window.electronAPI.deleteEmployee(id)
-    loadEmployees()
-  }
-
-  const inpClass = "w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm focus:border-orange-500 transition-all outline-none"
-  const labelClass = "block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 px-1"
-
-  return (
-    <div className="space-y-8">
-      {showForm && (
-        <div className="bg-slate-900 border border-orange-500/30 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-          <h3 className="font-bold text-xl mb-6">Register New Employee</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label className={labelClass}>Full Name</label>
-              <input className={inpClass} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Marco Romano" />
-            </div>
-            <div>
-              <label className={labelClass}>Role</label>
-              <select className={inpClass} value={form.role} onChange={e => setForm(p => ({ ...p, role: e.target.value }))}>
-                <option value="waiter">Server</option>
-                <option value="admin">Administrator</option>
-                <option value="bartender">Bartender</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Login PIN (4 digits)</label>
-              <input className={inpClass} maxLength={4} value={form.pin} onChange={e => setForm(p => ({ ...p, pin: e.target.value }))} placeholder="1234" />
-            </div>
-            <div>
-              <label className={labelClass}>RFID UID (Optional)</label>
-              <input className={inpClass} value={form.card_uid} onChange={e => setForm(p => ({ ...p, card_uid: e.target.value }))} placeholder="A1B2C3D4" />
-            </div>
-          </div>
-          <div className="flex gap-4 mt-10">
-            <button onClick={handleAdd} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-orange-500/20 transition-all">
-              Confirm Registration
-            </button>
-            <button onClick={() => setShowForm(false)} className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-bold text-sm transition-all">
-              Discard
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <h3 className="font-bold text-lg">Staff Directory</h3>
-          <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-all">
-            + New Employee
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-slate-950/50">
-                {['Employee', 'Role', 'Access Methods', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {emps.map(e => (
-                <tr key={e.id} className="hover:bg-slate-800/30 transition-colors group">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-[10px] text-slate-400 border border-slate-700">
-                        {e.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <span className="font-bold text-slate-200">{e.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter ${
-                      e.role === 'admin' ? 'bg-blue-500/10 text-blue-500' : 'bg-orange-500/10 text-orange-500'
-                    }`}>
-                      {e.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex gap-2">
-                      <span title="PIN Access" className={`w-5 h-5 rounded flex items-center justify-center text-[10px] border ${e.pin ? 'border-emerald-500/50 text-emerald-500' : 'border-slate-800 text-slate-700'}`}>🔢</span>
-                      <span title="RFID Access" className={`w-5 h-5 rounded flex items-center justify-center text-[10px] border ${e.card_uid ? 'border-emerald-500/50 text-emerald-500' : 'border-slate-800 text-slate-700'}`}>📡</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter ${
-                      e.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                    }`}>
-                      {e.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button onClick={() => handleDelete(e.id)} className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                      Terminate
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function TablesTab() {
-  const [tables, setTables] = useState([])
-  const [newName, setNewName] = useState('')
-  const [showForm, setShowForm] = useState(false)
-
-  useEffect(() => { loadTables() }, [])
-
-  async function loadTables() {
-    try {
-      const data = await window.electronAPI.getTables()
-      setTables(data)
-    } catch (e) { console.error(e) }
-  }
-
-  async function handleAdd() {
-    if (!newName.trim()) return
-    await window.electronAPI.addTable(newName.trim())
-    setNewName('')
-    setShowForm(false)
-    loadTables()
-  }
-
-  async function handleDelete(id) {
-    if (!window.confirm('Delete this table?')) return
-    await window.electronAPI.deleteTable(id)
-    loadTables()
-  }
-
-  return (
-    <div className="space-y-8">
-      {showForm && (
-        <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 flex items-end gap-4 max-w-xl animate-in fade-in slide-in-from-top-4">
-          <div className="flex-1">
-            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 px-1">Table Label / Location</label>
-            <input
-              value={newName}
-              onChange={e => setNewName(e.target.value)}
-              placeholder="e.g. Balcony T-01"
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 outline-none focus:border-orange-500"
-            />
-          </div>
-          <button onClick={handleAdd} className="h-12 px-8 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-all">Add</button>
-          <button onClick={() => setShowForm(false)} className="h-12 px-6 bg-slate-800 text-slate-400 rounded-xl font-bold transition-all">Cancel</button>
-        </div>
-      )}
-
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
-        <div className="flex justify-between items-center mb-8">
-          <h3 className="font-bold text-lg">Floor Map ({tables.length} Tables)</h3>
-          {!showForm && <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-all">+ Add Table</button>}
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          {tables.map(t => (
-            <div key={t.id} className="relative aspect-square bg-slate-950 border border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-center transition-all hover:border-slate-600 group">
-              <div className="text-4xl mb-3 opacity-30 group-hover:opacity-100 transition-opacity">🪑</div>
-              <div className="font-black text-slate-200 uppercase tracking-widest text-xs">{t.name}</div>
-              <div className="mt-2 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">Operational</span>
-              </div>
-              <button
-                onClick={() => handleDelete(t.id)}
-                className="absolute top-4 right-4 w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function Reports() {
-  const [stats, setStats] = useState({ total_orders: 0, total_revenue: 0, avg_order: 0 })
-  const [orders, setOrders] = useState([])
-
-  useEffect(() => {
-    window.electronAPI.getOrderStats().then(s => { if (s) setStats(s) }).catch(console.error)
-    window.electronAPI.getTodayOrders().then(o => setOrders(o || [])).catch(console.error)
-  }, [])
-
-  return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          { label: "Gross Revenue", value: `€${Number(stats.total_revenue).toFixed(2)}` },
-          { label: 'Completed Orders', value: stats.total_orders },
-          { label: 'Average Ticket', value: `€${Number(stats.avg_order).toFixed(2)}` },
-        ].map(s => (
-          <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-            <div className="text-[10px] font-black text-slate-500 uppercase tracking-[.2em] mb-4">{s.label}</div>
-            <div className="text-4xl font-black">{s.value}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-        <div className="p-6 border-b border-slate-800 bg-slate-950/30">
-          <h3 className="font-bold text-lg">Sales History</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="bg-slate-950/50">
-                {['Timestamp', 'Table ID', 'Assigned Staff', 'Method', 'Total'].map(h => (
-                  <th key={h} className="px-6 py-4 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {orders.map(o => (
-                <tr key={o.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-slate-500">
-                    {new Date(o.created_at).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-300">{o.table_name || '—'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-slate-400">{o.waiter_name || '—'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-[10px] font-bold text-slate-600 uppercase italic">In-Store</td>
-                  <td className="px-6 py-4 whitespace-nowrap font-black text-orange-500 text-right">
-                    €{Number(o.total).toFixed(2)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  )
-}
+// ── Settings ───────────────────────────────────────────────────────
 
 function Settings() {
   const [form, setForm] = useState({
     cafe_name: 'Caffè Centro',
-    address: 'Via Roma 12, Milano',
-    vat: '12345678901',
-    footer: 'Grazie! Thank you!'
+    address:   'Via Roma 12, Milano',
+    vat:       '12345678901',
+    footer:    'Grazie! Thank you!'
   })
 
-  const inpClass = "w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-sm focus:border-orange-500 transition-all outline-none"
-  const labelClass = "block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 px-1"
+  const inp = {
+    width:'100%', padding:'8px 10px', background:'#252836',
+    border:'1px solid #2d3148', borderRadius:7,
+    color:'#f1f5f9', fontSize:13
+  }
 
   return (
-    <div className="space-y-8 max-w-4xl">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
-        <h3 className="font-bold text-xl mb-8 flex items-center gap-3">
-          <span className="text-2xl">🏪</span> Establishment Profile
-        </h3>
-        <div className="space-y-6">
-          {[
-            { label: 'Business Name', key: 'cafe_name', placeholder: 'The Great Coffee Shop' },
-            { label: 'Legal Address', key: 'address', placeholder: '123 Business St, London' },
-            { label: 'VAT / Tax Registration', key: 'vat', placeholder: 'GB123456789' },
-            { label: 'Receipt Footer Message', key: 'footer', placeholder: 'We hope to see you again soon!' },
-          ].map(f => (
-            <div key={f.key}>
-              <label className={labelClass}>{f.label}</label>
-              <input
-                className={inpClass}
-                value={form[f.key]}
-                placeholder={f.placeholder}
-                onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-              />
-            </div>
-          ))}
-          <div className="pt-4">
-            <button className="px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black uppercase tracking-[.2em] text-xs shadow-xl shadow-orange-500/20 transition-all active:scale-[0.98]">
-              Update Settings
-            </button>
+    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+      <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12, padding:18 }}>
+        <div style={{ fontSize:14, fontWeight:500, marginBottom:16 }}>☕ Café Info</div>
+        {[
+          { label:'Café Name',       key:'cafe_name', placeholder:'My Café' },
+          { label:'Address',         key:'address',   placeholder:'Street, City' },
+          { label:'VAT Number',      key:'vat',       placeholder:'12345678901' },
+          { label:'Receipt Footer',  key:'footer',    placeholder:'Thank you!' },
+        ].map(f => (
+          <div key={f.key} style={{ marginBottom:12 }}>
+            <div style={{ fontSize:11, color:'#94a3b8', marginBottom:5 }}>{f.label}</div>
+            <input
+              style={inp}
+              value={form[f.key]}
+              placeholder={f.placeholder}
+              onChange={e => setForm(p => ({...p, [f.key]: e.target.value}))}
+            />
           </div>
-        </div>
+        ))}
+        <button style={{
+          marginTop:8, padding:'10px 24px', background:'#f97316',
+          border:'none', borderRadius:7, color:'#fff',
+          fontSize:13, cursor:'pointer'
+        }}>💾 Save Settings</button>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
-        <h3 className="font-bold text-xl mb-6 flex items-center gap-3">
-          <span className="text-2xl">🖨️</span> Hardware Integration
-        </h3>
-        <div className="p-6 bg-slate-950/50 border border-slate-800 rounded-2xl">
-          <label className={labelClass}>Thermal Receipt Printer</label>
-          <select className={inpClass + " max-w-md"}>
-            <option>System Default (PDF Preview)</option>
-            <option disabled>USB - Epson TM-T20III (Disconnected)</option>
-            <option disabled>LAN - Star TSP143 (Searching...)</option>
-          </select>
-          <p className="mt-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-loose">
-            Note: Native printing requires the Printer Bridge driver to be active in the system tray.
-          </p>
-        </div>
+      <div style={{ background:'#1a1d2e', border:'1px solid #2d3148', borderRadius:12, padding:18 }}>
+        <div style={{ fontSize:14, fontWeight:500, marginBottom:12 }}>🖨️ Printer</div>
+        <div style={{ fontSize:13, color:'#64748b', marginBottom:10 }}>Thermal printer connection</div>
+        <select style={{ ...inp, width:'auto', minWidth:260 }}>
+          <option>USB - Epson TM-T20III</option>
+          <option>LAN - Star TSP143</option>
+          <option>None (receipt preview only)</option>
+        </select>
+      </div>
+
+      <div style={{
+        background:'rgba(34,197,94,0.06)', border:'1px solid rgba(34,197,94,0.2)',
+        borderRadius:12, padding:16, fontSize:13, color:'#22c55e',
+        display:'flex', alignItems:'center', gap:10
+      }}>
+        ✅ Database connected · All data saved locally · No internet required
       </div>
     </div>
   )

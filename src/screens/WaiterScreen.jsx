@@ -1,25 +1,25 @@
 import { useState, useEffect } from 'react'
 
-const CATS = ['All', 'coffee', 'drinks', 'food', 'alcohol', 'desserts']
+const CATS = ['All','coffee','drinks','food','alcohol','desserts']
 
 export default function WaiterScreen({ user, onLogout }) {
-  const [products, setProducts] = useState([])
-  const [tables, setTables] = useState([])
+  const [products, setProducts]           = useState([])
+  const [tables, setTables]               = useState([])
   const [selectedTable, setSelectedTable] = useState(null)
-  const [orders, setOrders] = useState({})
-  const [cat, setCat] = useState('All')
-  const [showReceipt, setShowReceipt] = useState(false)
+  const [orders, setOrders]               = useState({})
+  const [cat, setCat]                     = useState('All')
+  const [showReceipt, setShowReceipt]     = useState(false)
 
   useEffect(() => {
     async function loadData() {
       try {
         const prods = await window.electronAPI.getProducts()
-        const tbls = await window.electronAPI.getTables()
+        const tbls  = await window.electronAPI.getTables()
         const activeOrders = await window.electronAPI.getActiveOrders()
         setProducts(prods)
         setTables(tbls)
         setOrders(activeOrders || {})
-      } catch (e) {
+      } catch(e) {
         console.error('Failed to load data:', e)
       }
     }
@@ -29,6 +29,7 @@ export default function WaiterScreen({ user, onLogout }) {
       try {
         const activeOrders = await window.electronAPI.getActiveOrders()
         setOrders(prev => {
+          // If a table is currently selected, preserve its local state to avoid overwriting while editing
           if (selectedTable && prev[selectedTable.id]) {
             return { ...activeOrders, [selectedTable.id]: prev[selectedTable.id] }
           }
@@ -42,11 +43,11 @@ export default function WaiterScreen({ user, onLogout }) {
     return () => clearInterval(interval)
   }, [selectedTable])
 
-  const initials = user.name.split(' ').map(n => n[0]).join('').slice(0, 2)
-  const filtered = cat === 'All' ? products : products.filter(p => p.category === cat)
+  const initials     = user.name.split(' ').map(n => n[0]).join('').slice(0,2)
+  const filtered     = cat === 'All' ? products : products.filter(p => p.category === cat)
   const currentOrder = selectedTable ? (orders[selectedTable.id] || []) : []
-  const total = currentOrder.reduce((s, i) => s + i.price * i.qty, 0)
-  const itemCount = currentOrder.reduce((s, i) => s + i.qty, 0)
+  const total        = currentOrder.reduce((s,i) => s + i.price * i.qty, 0)
+  const itemCount    = currentOrder.reduce((s,i) => s + i.qty, 0)
 
   function tableHasItems(tableId) {
     return (orders[tableId] || []).length > 0
@@ -69,8 +70,8 @@ export default function WaiterScreen({ user, onLogout }) {
   function addProduct(p) {
     if (!selectedTable) return
     const tableOrder = orders[selectedTable.id] || []
-    const existing = tableOrder.find(x => x.name === p.name)
-    const updated = existing
+    const existing   = tableOrder.find(x => x.name === p.name)
+    const updated    = existing
       ? tableOrder.map(x => x.name === p.name ? { ...x, qty: x.qty + 1 } : x)
       : [...tableOrder, { ...p, qty: 1 }]
 
@@ -81,7 +82,7 @@ export default function WaiterScreen({ user, onLogout }) {
   function changeQty(name, delta) {
     if (!selectedTable) return
     const tableOrder = orders[selectedTable.id] || []
-    const updated = tableOrder
+    const updated    = tableOrder
       .map(x => x.name === name ? { ...x, qty: x.qty + delta } : x)
       .filter(x => x.qty > 0)
 
@@ -93,17 +94,17 @@ export default function WaiterScreen({ user, onLogout }) {
     if (!currentOrder.length) return
     try {
       await window.electronAPI.addOrder({
-        table_id: selectedTable.id,
+        table_id:    selectedTable.id,
         employee_id: user.id,
-        total: total,
-        items: currentOrder.map(i => ({
-          name: i.name,
-          icon: i.icon,
-          qty: i.qty,
+        total:       total,
+        items:       currentOrder.map(i => ({
+          name:  i.name,
+          icon:  i.icon,
+          qty:   i.qty,
           price: i.price
         }))
       })
-    } catch (e) {
+    } catch(e) {
       console.error('Order save failed:', e)
     }
     setShowReceipt(true)
@@ -116,236 +117,279 @@ export default function WaiterScreen({ user, onLogout }) {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-50 overflow-hidden">
+    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#0f1117' }}>
+
       {/* Top bar */}
-      <header className="h-16 px-6 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between shrink-0 backdrop-blur-md">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center font-bold text-orange-500">
-            {initials}
-          </div>
+      <div style={{
+        padding:'10px 16px', background:'#181b24',
+        borderBottom:'1px solid #2d3148',
+        display:'flex', alignItems:'center', justifyContent:'space-between',
+        flexShrink:0
+      }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{
+            width:32, height:32, borderRadius:'50%',
+            background:'rgba(249,115,22,0.2)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:12, fontWeight:600, color:'#f97316'
+          }}>{initials}</div>
           <div>
-            <div className="text-sm font-semibold">{user.name}</div>
-            <div className="text-xs text-slate-500 leading-none">Server • Shift Active</div>
+            <div style={{ fontSize:13, fontWeight:500 }}>{user.name}</div>
+            <div style={{ fontSize:10, color:'#64748b' }}>Waiter</div>
           </div>
         </div>
 
         {selectedTable && (
-          <div className="px-4 py-1.5 bg-orange-500/10 border border-orange-500/30 rounded-full flex items-center gap-2">
-            <span className="text-orange-500 text-sm">🪑</span>
-            <span className="text-orange-500 font-bold text-sm uppercase tracking-wider">{selectedTable.name}</span>
+          <div style={{
+            padding:'6px 16px',
+            background:'rgba(249,115,22,0.1)',
+            border:'1px solid rgba(249,115,22,0.4)',
+            borderRadius:20, fontSize:13, fontWeight:600, color:'#f97316'
+          }}>
+            🪑 {selectedTable.name}
           </div>
         )}
 
-        <button
-          onClick={onLogout}
-          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 transition-colors text-sm font-medium"
-        >
-          Logout
-        </button>
-      </header>
+        <button onClick={onLogout} style={{
+          padding:'5px 12px', background:'#252836',
+          border:'1px solid #2d3148', borderRadius:6,
+          color:'#94a3b8', cursor:'pointer', fontSize:12
+        }}>Logout</button>
+      </div>
 
-      {/* Main content */}
-      <main className="flex flex-1 overflow-hidden">
+      {/* Main */}
+      <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
+
         {/* Tables panel */}
-        <aside className={`bg-slate-900/30 border-r border-slate-800 flex flex-col transition-all duration-300 ${selectedTable ? 'w-64' : 'w-full'}`}>
-          <div className="p-4 border-b border-slate-800 shrink-0 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Tables</h2>
-            {!selectedTable && <span className="text-xs text-slate-500">{tables.length} Active</span>}
+        <div style={{
+          width: selectedTable ? 200 : '100%',
+          background:'#181b24',
+          borderRight: selectedTable ? '1px solid #2d3148' : 'none',
+          display:'flex', flexDirection:'column',
+          transition:'width .2s'
+        }}>
+          <div style={{
+            padding:'14px 16px', borderBottom:'1px solid #2d3148',
+            fontSize:13, fontWeight:500, color:'#94a3b8'
+          }}>
+            🪑 Select Table
           </div>
-          <div className={`flex-1 overflow-y-auto p-4 grid gap-3 content-start ${selectedTable ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8'}`}>
+          <div style={{
+            flex:1, overflowY:'auto', padding:12,
+            display:'grid',
+            gridTemplateColumns: selectedTable
+              ? 'repeat(2,1fr)'
+              : 'repeat(auto-fill, minmax(140px,1fr))',
+            gap:10, alignContent:'start'
+          }}>
             {tables.map(t => {
-              const hasItems = tableHasItems(t.id)
+              const hasItems  = tableHasItems(t.id)
               const isSelected = selectedTable?.id === t.id
               return (
-                <button
+                <div
                   key={t.id}
                   onClick={() => setSelectedTable(t)}
-                  className={`relative p-6 rounded-2xl border transition-all duration-200 group ${
-                    isSelected
-                      ? 'bg-orange-500/20 border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.2)]'
+                  style={{
+                    background: isSelected
+                      ? 'rgba(249,115,22,0.15)'
                       : hasItems
-                        ? 'bg-emerald-500/5 border-emerald-500/30 hover:border-emerald-500/50'
-                        : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
-                  }`}
+                      ? 'rgba(34,197,94,0.06)'
+                      : '#1a1d2e',
+                    border: isSelected
+                      ? '2px solid #f97316'
+                      : hasItems
+                      ? '1px solid #22c55e'
+                      : '1px solid #2d3148',
+                    borderRadius:12,
+                    padding: selectedTable ? '14px 8px' : '24px 16px',
+                    cursor:'pointer', textAlign:'center', transition:'all .15s'
+                  }}
                 >
-                  <div className={`text-3xl mb-2 transition-transform duration-300 group-hover:scale-110 ${isSelected ? 'scale-110' : ''}`}>🪑</div>
-                  <div className={`font-bold ${isSelected ? 'text-orange-500' : 'text-slate-200'}`}>{t.name}</div>
-                  <div className={`text-[10px] mt-1 font-medium uppercase tracking-tighter ${hasItems ? 'text-emerald-500' : 'text-slate-600'}`}>
-                    {hasItems ? `${(orders[t.id] || []).reduce((s, i) => s + i.qty, 0)} items` : 'Free'}
+                  <div style={{ fontSize: selectedTable ? 22 : 32, marginBottom:6 }}>🪑</div>
+                  <div style={{
+                    fontSize: selectedTable ? 12 : 16, fontWeight:600,
+                    color: isSelected ? '#f97316' : '#f1f5f9'
+                  }}>{t.name}</div>
+                  <div style={{ fontSize:10, marginTop:4, color: hasItems ? '#22c55e' : '#64748b' }}>
+                    {hasItems
+                      ? `${(orders[t.id]||[]).reduce((s,i)=>s+i.qty,0)} items`
+                      : 'Empty'}
                   </div>
-                </button>
+                </div>
               )
             })}
           </div>
-        </aside>
+        </div>
 
         {/* Order screen */}
         {selectedTable && (
           <>
             {/* Products panel */}
-            <section className="flex-1 flex flex-col bg-slate-950/50">
+            <div style={{
+              flex:1, background:'#181b24',
+              display:'flex', flexDirection:'column',
+              borderRight:'1px solid #2d3148'
+            }}>
               {/* Categories */}
-              <nav className="flex gap-2 p-4 border-b border-slate-800 overflow-x-auto no-scrollbar shrink-0">
+              <div style={{
+                display:'flex', gap:8, padding:'10px 12px',
+                borderBottom:'1px solid #2d3148',
+                overflowX:'auto', flexShrink:0
+              }}>
                 {CATS.map(c => (
-                  <button
-                    key={c}
-                    onClick={() => setCat(c)}
-                    className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${
-                      cat === c
-                        ? 'bg-orange-500 border-orange-500 text-white shadow-lg'
-                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-                    }`}
-                  >
-                    {c}
-                  </button>
+                  <div key={c} onClick={() => setCat(c)} style={{
+                    padding:'5px 14px', borderRadius:20, cursor:'pointer',
+                    fontSize:12, whiteSpace:'nowrap',
+                    background: cat===c ? 'rgba(249,115,22,0.15)' : '#252836',
+                    border:     cat===c ? '1px solid #f97316' : '1px solid #2d3148',
+                    color:      cat===c ? '#f97316' : '#94a3b8'
+                  }}>{c}</div>
                 ))}
-              </nav>
+              </div>
 
               {/* Products grid */}
-              <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 content-start">
+              <div style={{
+                flex:1, overflowY:'auto', padding:12,
+                display:'grid',
+                gridTemplateColumns:'repeat(auto-fill, minmax(110px,1fr))',
+                gap:10, alignContent:'start'
+              }}>
                 {filtered.map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => addProduct(p)}
-                    className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:border-slate-600 hover:bg-slate-800/50 transition-all group active:scale-95"
-                  >
-                    <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{p.icon}</div>
-                    <div className="text-sm font-bold text-slate-200 line-clamp-1">{p.name}</div>
-                    <div className="text-orange-500 font-bold mt-1 text-lg">€{Number(p.price).toFixed(2)}</div>
-                  </button>
+                  <div key={p.id} onClick={() => addProduct(p)} style={{
+                    background:'#1a1d2e', border:'1px solid #2d3148',
+                    borderRadius:12, padding:'14px 8px',
+                    cursor:'pointer', textAlign:'center', transition:'all .15s'
+                  }}>
+                    <div style={{ fontSize:28, marginBottom:6 }}>{p.icon}</div>
+                    <div style={{ fontSize:12, fontWeight:500, marginBottom:4 }}>{p.name}</div>
+                    <div style={{ fontSize:14, fontWeight:600, color:'#f97316' }}>
+                      €{Number(p.price).toFixed(2)}
+                    </div>
+                  </div>
                 ))}
               </div>
-            </section>
+            </div>
 
             {/* Order summary */}
-            <section className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl">
-              <div className="p-4 border-b border-slate-800 flex items-center justify-between shrink-0">
-                <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Current Order</h2>
+            <div style={{
+              width:240, background:'#181b24',
+              display:'flex', flexDirection:'column'
+            }}>
+              <div style={{
+                padding:'12px 16px', borderBottom:'1px solid #2d3148',
+                display:'flex', justifyContent:'space-between', alignItems:'center'
+              }}>
+                <span style={{ fontSize:13, fontWeight:500, color:'#94a3b8' }}>Order</span>
                 <button
                   onClick={() => setOrders(prev => ({ ...prev, [selectedTable.id]: [] }))}
-                  className="text-[10px] font-bold text-slate-600 hover:text-red-400 uppercase transition-colors"
-                >Clear All</button>
+                  style={{ background:'none', border:'none', color:'#64748b', cursor:'pointer', fontSize:11 }}
+                >Clear</button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div style={{ flex:1, overflowY:'auto', padding:10 }}>
                 {currentOrder.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-600 opacity-40">
-                    <div className="text-6xl mb-4">🛒</div>
-                    <p className="font-bold uppercase tracking-widest text-xs">Basket is empty</p>
+                  <div style={{ textAlign:'center', padding:'32px 16px', color:'#64748b', fontSize:13 }}>
+                    <div style={{ fontSize:28, marginBottom:8 }}>🛒</div>
+                    Tap a product to add
                   </div>
                 ) : currentOrder.map(i => (
-                  <div key={i.name} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 flex items-center gap-3">
-                    <span className="text-2xl">{i.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-bold text-slate-200 truncate">{i.name}</div>
-                      <div className="text-[10px] text-slate-500 font-medium mt-0.5">€{i.price.toFixed(2)} / unit</div>
-                    </div>
-                    <div className="flex items-center gap-2 bg-slate-950 p-1 rounded-lg border border-slate-700/50">
-                      <button
-                        onClick={() => changeQty(i.name, -1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-slate-800 text-slate-300 transition-colors"
-                      >−</button>
-                      <span className="text-xs font-bold w-4 text-center">{i.qty}</span>
-                      <button
-                        onClick={() => changeQty(i.name, 1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-slate-800 text-slate-300 transition-colors"
-                      >+</button>
-                    </div>
-                    <div className="text-sm font-bold text-orange-500 min-w-[50px] text-right">
+                  <div key={i.name} style={{
+                    display:'flex', alignItems:'center', gap:6,
+                    padding:8, background:'#252836',
+                    borderRadius:8, marginBottom:6
+                  }}>
+                    <span style={{ fontSize:16 }}>{i.icon}</span>
+                    <span style={{ flex:1, fontSize:11, fontWeight:500 }}>{i.name}</span>
+                    <button onClick={() => changeQty(i.name,-1)} style={{
+                      width:20, height:20, background:'#1e2130',
+                      border:'none', borderRadius:4,
+                      cursor:'pointer', color:'#f1f5f9', fontSize:14
+                    }}>−</button>
+                    <span style={{ fontSize:12, fontWeight:600, minWidth:14, textAlign:'center' }}>
+                      {i.qty}
+                    </span>
+                    <button onClick={() => changeQty(i.name,1)} style={{
+                      width:20, height:20, background:'#1e2130',
+                      border:'none', borderRadius:4,
+                      cursor:'pointer', color:'#f1f5f9', fontSize:14
+                    }}>+</button>
+                    <span style={{ fontSize:11, fontWeight:600, color:'#f97316', minWidth:38, textAlign:'right' }}>
                       €{(i.price * i.qty).toFixed(2)}
-                    </div>
+                    </span>
                   </div>
                 ))}
               </div>
 
-              <div className="p-4 bg-slate-950 border-t border-slate-800">
-                <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-5 mb-4">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Subtotal</span>
-                    <span className="text-xs font-bold text-slate-300">€{(total * 0.90).toFixed(2)}</span>
+              <div style={{ padding:'0 12px 12px' }}>
+                <div style={{
+                  background:'rgba(249,115,22,0.08)',
+                  border:'1px solid rgba(249,115,22,0.3)',
+                  borderRadius:10, padding:14, textAlign:'center', marginBottom:10
+                }}>
+                  <div style={{ fontSize:11, color:'#94a3b8', marginBottom:2 }}>TOTAL</div>
+                  <div style={{ fontSize:30, fontWeight:600, color:'#f97316' }}>
+                    €{total.toFixed(2)}
                   </div>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">VAT (10%)</span>
-                    <span className="text-xs font-bold text-slate-300">€{(total * 0.10).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between items-end border-t border-orange-500/20 pt-3 mt-3">
-                    <span className="text-xs font-black text-slate-400 uppercase tracking-[.2em]">Total</span>
-                    <span className="text-4xl font-black text-orange-500 tracking-tighter">€{total.toFixed(2)}</span>
+                  <div style={{ fontSize:11, color:'#64748b', marginTop:2 }}>
+                    {itemCount} items · {selectedTable.name}
                   </div>
                 </div>
-                <button
-                  onClick={printReceipt}
-                  disabled={currentOrder.length === 0}
-                  className="w-full py-4 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed rounded-2xl text-white font-black uppercase tracking-widest text-sm shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]"
-                >
-                  Confirm & Print
+                <button onClick={printReceipt} style={{
+                  width:'100%', padding:14, background:'#f97316',
+                  border:'none', borderRadius:10, color:'#fff',
+                  fontSize:14, fontWeight:600, cursor:'pointer'
+                }}>
+                  🖨️ Print Receipt
                 </button>
               </div>
-            </section>
+            </div>
           </>
         )}
-      </main>
+      </div>
 
       {/* Receipt Modal */}
       {showReceipt && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-          <div className="bg-white text-slate-900 w-full max-w-sm rounded-xl shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-            <div className="p-8 font-mono text-[11px] leading-relaxed relative">
-              {/* Receipt pattern top */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200" />
-
-              <div className="text-center mb-6">
-                <div className="text-lg font-black tracking-tighter mb-1 uppercase">Caffè Centro</div>
-                <div className="text-[9px] text-slate-500 uppercase tracking-widest">Via Roma 12, Milano • IT</div>
-                <div className="text-[9px] text-slate-500">VAT: 12345678901</div>
-              </div>
-
-              <div className="flex justify-between border-y border-dashed border-slate-300 py-3 mb-4 text-[9px] uppercase tracking-tighter text-slate-500 font-bold">
-                <span>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                <span>Order #A{Math.floor(Math.random() * 9000) + 1000}</span>
-              </div>
-
-              <div className="space-y-2 mb-6">
-                {currentOrder.map(i => (
-                  <div key={i.name} className="flex justify-between items-start gap-4">
-                    <span className="flex-1 italic">{i.qty}x {i.name}</span>
-                    <span className="font-bold shrink-0">€{(i.price * i.qty).toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-dashed border-slate-300 pt-4 mb-4">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="uppercase text-[9px] font-bold">Subtotal</span>
-                  <span>€{(total * 0.9).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center mb-3">
-                  <span className="uppercase text-[9px] font-bold">VAT (10.0%)</span>
-                  <span>€{(total * 0.1).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm font-black border-t border-slate-900 pt-2 uppercase">
-                  <span>Grand Total</span>
-                  <span>€{total.toFixed(2)}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 text-[9px] text-slate-400 uppercase font-bold mb-8">
-                <div>Table: <span className="text-slate-900">{selectedTable.name}</span></div>
-                <div className="text-right">Server: <span className="text-slate-900">{user.name.split(' ')[0]}</span></div>
-              </div>
-
-              <div className="text-center italic text-slate-400 mb-2">~ Grazie! Thank you for visiting ~</div>
-              <div className="text-[8px] text-center text-slate-300 uppercase tracking-[.3em]">www.caffecentro.it</div>
+        <div style={{
+          position:'fixed', inset:0, background:'rgba(0,0,0,0.7)',
+          display:'flex', alignItems:'center', justifyContent:'center', zIndex:100
+        }}>
+          <div style={{
+            background:'#fff', color:'#000', padding:24,
+            width:280, borderRadius:8, fontFamily:'monospace', fontSize:12
+          }}>
+            <div style={{ textAlign:'center', fontWeight:700, fontSize:16, marginBottom:2 }}>
+              ☕ CAFFÈ CENTRO
             </div>
-
-            <div className="p-4 bg-slate-50 border-t border-slate-100">
-              <button
-                onClick={closeReceipt}
-                className="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-bold uppercase tracking-widest text-xs transition-all shadow-lg active:scale-95"
-              >
-                Done • Clear Table
-              </button>
+            <div style={{ textAlign:'center', fontSize:10, color:'#666', marginBottom:14 }}>
+              Via Roma 12, Milano
             </div>
+            <hr style={{ border:'none', borderTop:'1px dashed #ccc', margin:'8px 0' }} />
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'#888', marginBottom:8 }}>
+              <span>{new Date().toLocaleDateString()}</span>
+              <span>{new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
+            </div>
+            {currentOrder.map(i => (
+              <div key={i.name} style={{ display:'flex', justifyContent:'space-between', padding:'3px 0' }}>
+                <span>{i.qty}x {i.name}</span>
+                <span>€{(i.price * i.qty).toFixed(2)}</span>
+              </div>
+            ))}
+            <hr style={{ border:'none', borderTop:'1px dashed #ccc', margin:'8px 0' }} />
+            <div style={{ display:'flex', justifyContent:'space-between', fontWeight:700, fontSize:15 }}>
+              <span>TOTAL</span>
+              <span>€{total.toFixed(2)}</span>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'#888', marginTop:8 }}>
+              <span>Table: {selectedTable.name}</span>
+              <span>Waiter: {user.name.split(' ')[0]}</span>
+            </div>
+            <hr style={{ border:'none', borderTop:'1px dashed #ccc', margin:'8px 0' }} />
+            <div style={{ textAlign:'center', fontSize:10, color:'#888' }}>Grazie! Thank you!</div>
+            <button onClick={closeReceipt} style={{
+              width:'100%', marginTop:12, padding:10,
+              background:'#f97316', border:'none',
+              borderRadius:6, color:'#fff', cursor:'pointer', fontSize:12
+            }}>✓ Done — Clear Table</button>
           </div>
         </div>
       )}
