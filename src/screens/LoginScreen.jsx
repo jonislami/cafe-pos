@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 
 export default function LoginScreen({ onLogin }) {
-  const [pin, setPin] = useState('')
-  const [error, setError] = useState(false)
+  const [pin, setPin]         = useState('')
+  const [error, setError]     = useState(false)
   const [loading, setLoading] = useState(false)
-
+  const [shake, setShake]     = useState(false)
   const buffer = useRef('')
-  const timer = useRef(null)
+  const timer  = useRef(null)
 
   useEffect(() => {
     function handleKey(e) {
@@ -32,86 +32,123 @@ export default function LoginScreen({ onLogin }) {
 
   async function checkRFID(uid) {
     try {
-      const employee = await window.electronAPI.rfidLogin(uid)
-      if (employee) onLogin(employee)
-    } catch (e) { console.error(e) }
+      const emp = await window.electronAPI.rfidLogin(uid)
+      if (emp) onLogin(emp)
+    } catch(e) { console.error(e) }
   }
 
-  const handleNumberClick = (num) => {
-    if (pin.length < 4) {
-      const newPin = pin + num
-      setPin(newPin)
-      if (newPin.length === 4) handlePinSubmit(newPin)
+  function handleNumber(num) {
+    if (loading || pin.length >= 4) return
+    const next = pin + num
+    setPin(next)
+    setError(false)
+    if (next.length === 4) submit(next)
+  }
+
+  async function submit(finalPin) {
+    setLoading(true)
+    try {
+      const emp = await window.electronAPI.pinLogin(finalPin)
+      if (emp) {
+        onLogin(emp)
+      } else {
+        setError(true)
+        setShake(true)
+        setTimeout(() => { setPin(''); setError(false); setShake(false) }, 700)
+      }
+    } catch(e) {
+      setError(true)
+      setTimeout(() => { setPin(''); setError(false) }, 700)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handlePinSubmit = async (finalPin) => {
-    setLoading(true); setError(false)
-    try {
-      const employee = await window.electronAPI.pinLogin(finalPin)
-      if (employee) onLogin(employee)
-      else { setError(true); setPin('') }
-    } catch (e) { setError(true); setPin('') } finally { setLoading(false) }
-  }
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0c10] text-slate-200 font-sans p-6 overflow-hidden">
+    <div style={{
+      display:'flex', flexDirection:'column', alignItems:'center',
+      justifyContent:'center', minHeight:'100vh',
+      background:'#f8fafc', fontFamily:'"Inter",system-ui,sans-serif',
+      padding:24
+    }}>
+      <style>{`
+        @keyframes shake {
+          0%,100%{transform:translateX(0)}
+          20%{transform:translateX(-8px)} 40%{transform:translateX(8px)}
+          60%{transform:translateX(-5px)} 80%{transform:translateX(5px)}
+        }
+        .num-btn:hover { background:#e2e8f0 !important; }
+        .num-btn:active { transform:scale(0.95); }
+      `}</style>
 
-      <div className="w-full max-w-xs text-center mb-12">
-        <h1 className="text-5xl font-black tracking-tighter text-blue-500 mb-2">CaféPOS</h1>
-        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[.3em]">Access Security</p>
-      </div>
-
-      <div className="w-full max-w-sm">
-        {/* PIN Dots */}
-        <div className="flex justify-center gap-6 mb-16">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                pin.length > i ? 'bg-blue-500 scale-125' : error ? 'bg-red-500 animate-pulse' : 'bg-slate-800'
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Minimalist Numpad */}
-        <div className="grid grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-            <button
-              key={num}
-              onClick={() => handleNumberClick(num.toString())}
-              disabled={loading}
-              className="h-20 rounded-2xl bg-slate-900/50 hover:bg-blue-600/10 border border-slate-800/50 hover:border-blue-500/30 text-2xl font-black transition-all disabled:opacity-50 active:scale-90"
-            >
-              {num}
-            </button>
-          ))}
-          <div />
-          <button
-            onClick={() => handleNumberClick('0')}
-            disabled={loading}
-            className="h-20 rounded-2xl bg-slate-900/50 hover:bg-blue-600/10 border border-slate-800/50 hover:border-blue-500/30 text-2xl font-black transition-all disabled:opacity-50 active:scale-90"
-          >
-            0
-          </button>
-          <button
-            onClick={() => setPin(pin.slice(0, -1))}
-            disabled={loading || pin.length === 0}
-            className="h-20 flex items-center justify-center text-slate-600 hover:text-slate-300 transition-colors"
-          >
-            <span className="text-2xl">←</span>
-          </button>
-        </div>
-
-        <div className="mt-16 text-center">
-          <div className="text-slate-700 text-[9px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-            <span className="w-1.5 h-1.5 bg-blue-500/50 rounded-full" />
-            Scanner Active
-          </div>
+      {/* Logo */}
+      <div style={{ textAlign:'center', marginBottom:48 }}>
+        <div style={{
+          width:48, height:48, background:'#1e293b', borderRadius:14,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          margin:'0 auto 16px', fontSize:20, fontWeight:900, color:'#fff'
+        }}>C</div>
+        <div style={{ fontSize:22, fontWeight:800, color:'#0f172a', letterSpacing:'-0.5px' }}>CaféPOS</div>
+        <div style={{ fontSize:10, color:'#94a3b8', fontWeight:600, letterSpacing:'0.2em', textTransform:'uppercase', marginTop:4 }}>
+          Staff Access
         </div>
       </div>
 
+      {/* PIN dots */}
+      <div style={{
+        display:'flex', gap:16, marginBottom:40,
+        animation: shake ? 'shake 0.4s ease' : 'none'
+      }}>
+        {[0,1,2,3].map(i => (
+          <div key={i} style={{
+            width:12, height:12, borderRadius:'50%',
+            transition:'all .2s',
+            background: error ? '#ef4444' : pin.length > i ? '#1e293b' : '#e2e8f0',
+            transform: pin.length > i ? 'scale(1.2)' : 'scale(1)'
+          }}/>
+        ))}
+      </div>
+
+      {/* Numpad */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, width:240 }}>
+        {[1,2,3,4,5,6,7,8,9].map(n => (
+          <button key={n} className="num-btn" onClick={() => handleNumber(n.toString())}
+            disabled={loading} style={{
+              height:68, borderRadius:14, background:'#fff',
+              border:'1px solid #e2e8f0', color:'#0f172a',
+              fontSize:20, fontWeight:700, cursor:'pointer',
+              transition:'all .12s', fontFamily:'inherit',
+              boxShadow:'0 1px 3px rgba(0,0,0,0.06)'
+            }}>{n}</button>
+        ))}
+        <div />
+        <button className="num-btn" onClick={() => handleNumber('0')} disabled={loading} style={{
+          height:68, borderRadius:14, background:'#fff',
+          border:'1px solid #e2e8f0', color:'#0f172a',
+          fontSize:20, fontWeight:700, cursor:'pointer',
+          transition:'all .12s', fontFamily:'inherit',
+          boxShadow:'0 1px 3px rgba(0,0,0,0.06)'
+        }}>0</button>
+        <button onClick={() => { setPin(p => p.slice(0,-1)); setError(false) }}
+          disabled={loading || pin.length === 0} style={{
+            height:68, borderRadius:14, background:'transparent',
+            border:'none', color:'#94a3b8', fontSize:20,
+            cursor: pin.length === 0 ? 'not-allowed' : 'pointer',
+            transition:'all .12s', fontFamily:'inherit'
+          }}>⌫</button>
+      </div>
+
+      {/* RFID hint */}
+      <div style={{
+        marginTop:40, fontSize:10, color:'#cbd5e1', fontWeight:600,
+        textTransform:'uppercase', letterSpacing:'0.15em',
+        display:'flex', alignItems:'center', gap:8
+      }}>
+        <div style={{
+          width:6, height:6, borderRadius:'50%', background:'#94a3b8'
+        }}/>
+        RFID Scanner Active
+      </div>
     </div>
   )
 }
