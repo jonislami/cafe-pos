@@ -10,7 +10,6 @@ export default function LoginScreen({ onLogin }) {
 
   useEffect(() => {
     function handleKey(e) {
-      // RFID logic
       if (e.key === 'Enter') {
         const uid = buffer.current.trim()
         if (uid.length >= 4) checkRFID(uid)
@@ -34,121 +33,85 @@ export default function LoginScreen({ onLogin }) {
   async function checkRFID(uid) {
     try {
       const employee = await window.electronAPI.rfidLogin(uid)
-      if (employee) {
-        onLogin(employee)
-      }
-    } catch (e) {
-      console.error(e)
-    }
+      if (employee) onLogin(employee)
+    } catch (e) { console.error(e) }
   }
 
   const handleNumberClick = (num) => {
     if (pin.length < 4) {
       const newPin = pin + num
       setPin(newPin)
-      if (newPin.length === 4) {
-        handlePinSubmit(newPin)
-      }
+      if (newPin.length === 4) handlePinSubmit(newPin)
     }
-  }
-
-  const handleDelete = () => {
-    setPin(pin.slice(0, -1))
-    setError(false)
   }
 
   const handlePinSubmit = async (finalPin) => {
-    setLoading(true)
-    setError(false)
+    setLoading(true); setError(false)
     try {
       const employee = await window.electronAPI.pinLogin(finalPin)
-      if (employee) {
-        onLogin(employee)
-      } else {
-        setError(true)
-        setPin('')
-        // Brief vibration or shake effect could be added here
-      }
-    } catch (e) {
-      console.error(e)
-      setError(true)
-      setPin('')
-    } finally {
-      setLoading(false)
-    }
+      if (employee) onLogin(employee)
+      else { setError(true); setPin('') }
+    } catch (e) { setError(true); setPin('') } finally { setLoading(false) }
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-slate-50 font-sans p-6">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-black tracking-tighter mb-2 text-orange-500">CaféPOS</h1>
-          <p className="text-slate-400 text-sm">Enter your PIN to start your shift</p>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0c10] text-slate-200 font-sans p-6 overflow-hidden">
 
-        {/* PIN Indicators */}
-        <div className="flex justify-center gap-4 mb-10">
+      <div className="w-full max-w-xs text-center mb-12">
+        <h1 className="text-5xl font-black tracking-tighter text-blue-500 mb-2">CaféPOS</h1>
+        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[.3em]">Access Security</p>
+      </div>
+
+      <div className="w-full max-w-sm">
+        {/* PIN Dots */}
+        <div className="flex justify-center gap-6 mb-16">
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
-                pin.length > i
-                  ? 'bg-orange-500 border-orange-500 scale-110'
-                  : error
-                    ? 'border-red-500 bg-red-500/20'
-                    : 'border-slate-700 bg-transparent'
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                pin.length > i ? 'bg-blue-500 scale-125' : error ? 'bg-red-500 animate-pulse' : 'bg-slate-800'
               }`}
             />
           ))}
         </div>
 
-        {error && (
-          <div className="text-center text-red-400 text-sm mb-6 animate-pulse">
-            Invalid PIN. Please try again.
-          </div>
-        )}
-
-        {/* Numpad */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        {/* Minimalist Numpad */}
+        <div className="grid grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
             <button
               key={num}
               onClick={() => handleNumberClick(num.toString())}
               disabled={loading}
-              className="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 active:bg-slate-600 border border-slate-700/50 text-xl font-semibold transition-colors flex items-center justify-center disabled:opacity-50"
+              className="h-20 rounded-2xl bg-slate-900/50 hover:bg-blue-600/10 border border-slate-800/50 hover:border-blue-500/30 text-2xl font-black transition-all disabled:opacity-50 active:scale-90"
             >
               {num}
             </button>
           ))}
-          <div className="h-16" /> {/* Placeholder */}
+          <div />
           <button
             onClick={() => handleNumberClick('0')}
             disabled={loading}
-            className="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 active:bg-slate-600 border border-slate-700/50 text-xl font-semibold transition-colors flex items-center justify-center disabled:opacity-50"
+            className="h-20 rounded-2xl bg-slate-900/50 hover:bg-blue-600/10 border border-slate-800/50 hover:border-blue-500/30 text-2xl font-black transition-all disabled:opacity-50 active:scale-90"
           >
             0
           </button>
           <button
-            onClick={handleDelete}
+            onClick={() => setPin(pin.slice(0, -1))}
             disabled={loading || pin.length === 0}
-            className="h-16 rounded-2xl bg-slate-800/50 hover:bg-red-500/10 hover:text-red-400 active:bg-red-500/20 border border-slate-700/50 text-xl font-semibold transition-colors flex items-center justify-center disabled:opacity-50"
+            className="h-20 flex items-center justify-center text-slate-600 hover:text-slate-300 transition-colors"
           >
-            ⌫
+            <span className="text-2xl">←</span>
           </button>
         </div>
 
-        <div className="text-center">
-          <div className="text-slate-500 text-xs flex items-center justify-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            RFID System Ready
+        <div className="mt-16 text-center">
+          <div className="text-slate-700 text-[9px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+            <span className="w-1.5 h-1.5 bg-blue-500/50 rounded-full" />
+            Scanner Active
           </div>
         </div>
       </div>
 
-      {/* Footer info */}
-      <div className="mt-8 text-slate-600 text-xs uppercase tracking-widest font-medium">
-        Caffè Centro POS v1.0.0
-      </div>
     </div>
   )
 }

@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #f97316;
-  --color-primary-dark: #ea580c;
-  --color-bg-main: #020617;
-  --color-bg-card: #0f172a;
-  --color-border-main: #1e293b;
+  --color-primary: #3b82f6; /* Professional Blue */
+  --color-primary-dark: #2563eb;
+  --color-bg-main: #0a0c10; /* Cleaner Darker Background */
+  --color-bg-card: #14171c;
+  --color-border-main: #23272f;
 }
 
 * {
@@ -16,16 +16,16 @@
 
 body {
   background: var(--color-bg-main);
-  color: #f1f5f9;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #e2e8f0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbar */
+/* Cleaner, more subtle scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -33,18 +33,35 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #2d333b;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #444c56;
 }
 
 button {
   user-select: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 input, select {
   outline: none;
+}
+
+/* Utilities for clean layouts */
+.glass {
+  background: rgba(20, 23, 28, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card-hover {
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.card-hover:hover {
+  border-color: var(--color-primary);
 }
