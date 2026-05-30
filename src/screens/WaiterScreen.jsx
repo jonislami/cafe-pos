@@ -28,14 +28,20 @@ export default function WaiterScreen({ user, onLogout }) {
     const interval = setInterval(async () => {
       try {
         const activeOrders = await window.electronAPI.getActiveOrders()
-        setOrders(activeOrders || {})
+        setOrders(prev => {
+          // If a table is currently selected, preserve its local state to avoid overwriting while editing
+          if (selectedTable && prev[selectedTable.id]) {
+            return { ...activeOrders, [selectedTable.id]: prev[selectedTable.id] }
+          }
+          return activeOrders || {}
+        })
       } catch (e) {
         console.error('Failed to sync orders:', e)
       }
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [selectedTable])
 
   const initials     = user.name.split(' ').map(n => n[0]).join('').slice(0,2)
   const filtered     = cat === 'All' ? products : products.filter(p => p.category === cat)

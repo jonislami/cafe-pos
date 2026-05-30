@@ -128,30 +128,37 @@ ipcMain.handle('orders:get-active', () => {
 })
 
 ipcMain.handle('orders:sync-table', (_, { tableId, employeeId, items, total }) => {
-  // 1. Find existing open order for this table
-  let order = db.get("SELECT id FROM orders WHERE table_id = ? AND status = 'open'", [tableId])
-  let orderId
+  console.log(`Syncing table ${tableId} with ${items.length} items`)
+  try {
+    // 1. Find existing open order for this table
+    let order = db.get("SELECT id FROM orders WHERE table_id = ? AND status = 'open'", [tableId])
+    let orderId
 
-  if (order) {
-    orderId = order.id
-    db.run('UPDATE orders SET total = ?, employee_id = ? WHERE id = ?', [total, employeeId, orderId])
-    db.run('DELETE FROM order_items WHERE order_id = ?', [orderId])
-  } else {
-    db.run(
-      'INSERT INTO orders (table_id, employee_id, total, status) VALUES (?, ?, ?, "open")',
-      [tableId, employeeId, total]
-    )
-    orderId = db.get('SELECT last_insert_rowid() as id').id
-  }
+    if (order) {
+      orderId = order.id
+      db.run('UPDATE orders SET total = ?, employee_id = ? WHERE id = ?', [total, employeeId, orderId])
+      db.run('DELETE FROM order_items WHERE order_id = ?', [orderId])
+    } else {
+      db.run(
+        'INSERT INTO orders (table_id, employee_id, total, status) VALUES (?, ?, ?, "open")',
+        [tableId, employeeId, total]
+      )
+      const res = db.get('SELECT last_insert_rowid() as id')
+      orderId = res.id
+    }
 
-  // 2. Insert items
-  for (const item of items) {
-    db.run(
-      'INSERT INTO order_items (order_id, product_name, product_icon, quantity, price) VALUES (?, ?, ?, ?, ?)',
-      [orderId, item.name, item.icon, item.qty, item.price]
-    )
+    // 2. Insert items
+    for (const item of items) {
+      db.run(
+        'INSERT INTO order_items (order_id, product_name, product_icon, quantity, price) VALUES (?, ?, ?, ?, ?)',
+        [orderId, item.name, item.icon || '☕', item.qty, item.price]
+      )
+    }
+    return { orderId }
+  } catch (e) {
+    console.error('Failed to sync table:', e)
+    throw e
   }
-  return { orderId }
 })
 
 ipcMain.handle('orders:add', (_, o) => {
