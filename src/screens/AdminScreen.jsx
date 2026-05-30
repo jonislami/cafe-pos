@@ -45,14 +45,6 @@ export default function AdminScreen({ user, onLogout }) {
                     : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                 }`}
               >
-                <span className={`text-lg transition-transform group-hover:scale-110 ${tab === t ? '' : 'grayscale opacity-70'}`}>
-                  {t === 'Dashboard' && '📊'}
-                  {t === 'Products'  && '📦'}
-                  {t === 'Employees' && '👥'}
-                  {t === 'Tables'    && '🪑'}
-                  {t === 'Reports'   && '📈'}
-                  {t === 'Settings'  && '⚙️'}
-                </span>
                 {t}
               </button>
             ))}
@@ -107,19 +99,16 @@ function Dashboard() {
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Today's Revenue", value: `€${Number(stats.total_revenue).toFixed(2)}`, icon: '💰', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Orders Today', value: stats.total_orders, icon: '🛒', color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          { label: 'Avg Order', value: `€${Number(stats.avg_order).toFixed(2)}`, icon: '📊', color: 'text-purple-500', bg: 'bg-purple-500/10' },
-          { label: 'Active Waiters', value: '3', icon: '👤', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+          { label: "Today's Revenue", value: `€${Number(stats.total_revenue).toFixed(2)}`, color: 'text-emerald-500' },
+          { label: 'Orders Today', value: stats.total_orders, color: 'text-blue-500' },
+          { label: 'Avg Order', value: `€${Number(stats.avg_order).toFixed(2)}`, color: 'text-purple-500' },
+          { label: 'Active Waiters', value: '3', color: 'text-orange-500' },
         ].map(s => (
           <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 hover:border-slate-700 transition-all group">
             <div className="flex justify-between items-start mb-4">
-              <span className={`w-12 h-12 rounded-2xl ${s.bg} flex items-center justify-center text-xl group-hover:scale-110 transition-transform`}>
-                {s.icon}
-              </span>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mt-2">Live</span>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mt-2">Live Status</span>
             </div>
-            <div className="text-3xl font-black mb-1">{s.value}</div>
+            <div className="text-3xl font-black mb-1 transition-transform group-hover:translate-x-1">{s.value}</div>
             <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{s.label}</div>
           </div>
         ))}
@@ -191,27 +180,57 @@ function RecentOrders() {
 function Products() {
   const [items, setItems] = useState([])
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', category: 'coffee', price: '', stock: '', icon: '☕' })
+  const [editingId, setEditingId] = useState(null)
+  const [form, setForm] = useState({ name: '', category: 'coffee', price: '', stock: '', icon: '' })
 
   useEffect(() => { loadProducts() }, [])
 
   async function loadProducts() {
     try {
       const prods = await window.electronAPI.getProducts()
-      setItems(prods)
+      // Sort by category then name for a more professional feel
+      const sorted = [...prods].sort((a, b) => {
+        if (a.category !== b.category) return a.category.localeCompare(b.category)
+        return a.name.localeCompare(b.name)
+      })
+      setItems(sorted)
     } catch (e) { console.error(e) }
   }
 
-  async function handleAdd() {
+  async function handleSubmit() {
     if (!form.name || !form.price) return
-    await window.electronAPI.addProduct({
+    const payload = {
       ...form,
       price: parseFloat(form.price),
       stock: parseInt(form.stock) || 0
-    })
-    setForm({ name: '', category: 'coffee', price: '', stock: '', icon: '☕' })
-    setShowForm(false)
+    }
+
+    if (editingId) {
+      await window.electronAPI.updateProduct({ ...payload, id: editingId })
+    } else {
+      await window.electronAPI.addProduct(payload)
+    }
+
+    cancelForm()
     loadProducts()
+  }
+
+  function handleEdit(item) {
+    setForm({
+      name: item.name,
+      category: item.category,
+      price: item.price.toString(),
+      stock: item.stock.toString(),
+      icon: item.icon || ''
+    })
+    setEditingId(item.id)
+    setShowForm(true)
+  }
+
+  function cancelForm() {
+    setForm({ name: '', category: 'coffee', price: '', stock: '', icon: '' })
+    setEditingId(null)
+    setShowForm(false)
   }
 
   async function handleDelete(id) {
@@ -227,15 +246,11 @@ function Products() {
     <div className="space-y-8">
       {showForm && (
         <div className="bg-slate-900 border border-orange-500/30 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-          <h3 className="font-bold text-xl mb-6">Create New Menu Item</h3>
+          <h3 className="font-bold text-xl mb-6">{editingId ? 'Edit Menu Item' : 'Create New Menu Item'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <label className={labelClass}>Product Name</label>
               <input className={inpClass} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Double Espresso" />
-            </div>
-            <div>
-              <label className={labelClass}>Emoji Icon</label>
-              <input className={inpClass} value={form.icon} onChange={e => setForm(p => ({ ...p, icon: e.target.value }))} placeholder="☕" />
             </div>
             <div>
               <label className={labelClass}>Category</label>
@@ -257,10 +272,10 @@ function Products() {
             </div>
           </div>
           <div className="flex gap-4 mt-10">
-            <button onClick={handleAdd} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-orange-500/20 transition-all">
-              Save Item
+            <button onClick={handleSubmit} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-orange-500/20 transition-all">
+              {editingId ? 'Update Item' : 'Save Item'}
             </button>
-            <button onClick={() => setShowForm(false)} className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-bold text-sm transition-all">
+            <button onClick={cancelForm} className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-bold text-sm transition-all">
               Discard
             </button>
           </div>
@@ -287,10 +302,7 @@ function Products() {
               {items.map(i => (
                 <tr key={i.id} className="hover:bg-slate-800/30 transition-colors group">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{i.icon}</span>
-                      <span className="font-bold text-slate-200">{i.name}</span>
-                    </div>
+                    <span className="font-bold text-slate-200">{i.name}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">{i.category}</span>
@@ -305,9 +317,14 @@ function Products() {
                     <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase tracking-tighter">Active</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <button onClick={() => handleDelete(i.id)} className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                      Archive
-                    </button>
+                    <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => handleEdit(i)} className="text-orange-500 hover:text-orange-400 text-xs font-bold uppercase tracking-widest">
+                        Edit
+                      </button>
+                      <button onClick={() => handleDelete(i.id)} className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest">
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -322,6 +339,7 @@ function Products() {
 function Employees() {
   const [emps, setEmps] = useState([])
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ name: '', role: 'waiter', card_uid: '', pin: '', status: 'active' })
 
   useEffect(() => { loadEmployees() }, [])
@@ -333,12 +351,33 @@ function Employees() {
     } catch (e) { console.error(e) }
   }
 
-  async function handleAdd() {
+  async function handleSubmit() {
     if (!form.name) return
-    await window.electronAPI.addEmployee(form)
-    setForm({ name: '', role: 'waiter', card_uid: '', pin: '', status: 'active' })
-    setShowForm(false)
+    if (editingId) {
+      await window.electronAPI.updateEmployee({ ...form, id: editingId })
+    } else {
+      await window.electronAPI.addEmployee(form)
+    }
+    cancelForm()
     loadEmployees()
+  }
+
+  function handleEdit(e) {
+    setForm({
+      name: e.name,
+      role: e.role,
+      card_uid: e.card_uid || '',
+      pin: e.pin || '',
+      status: e.status
+    })
+    setEditingId(e.id)
+    setShowForm(true)
+  }
+
+  function cancelForm() {
+    setForm({ name: '', role: 'waiter', card_uid: '', pin: '', status: 'active' })
+    setEditingId(null)
+    setShowForm(false)
   }
 
   async function handleDelete(id) {
@@ -354,7 +393,7 @@ function Employees() {
     <div className="space-y-8">
       {showForm && (
         <div className="bg-slate-900 border border-orange-500/30 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-          <h3 className="font-bold text-xl mb-6">Register New Employee</h3>
+          <h3 className="font-bold text-xl mb-6">{editingId ? 'Edit Employee' : 'Register New Employee'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <label className={labelClass}>Full Name</label>
@@ -378,10 +417,10 @@ function Employees() {
             </div>
           </div>
           <div className="flex gap-4 mt-10">
-            <button onClick={handleAdd} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-orange-500/20 transition-all">
-              Confirm Registration
+            <button onClick={handleSubmit} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-orange-500/20 transition-all">
+              {editingId ? 'Update Employee' : 'Confirm Registration'}
             </button>
-            <button onClick={() => setShowForm(false)} className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-bold text-sm transition-all">
+            <button onClick={cancelForm} className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl font-bold text-sm transition-all">
               Discard
             </button>
           </div>
@@ -436,9 +475,14 @@ function Employees() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <button onClick={() => handleDelete(e.id)} className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                      Terminate
-                    </button>
+                    <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => handleEdit(e)} className="text-orange-500 hover:text-orange-400 text-xs font-bold uppercase tracking-widest">
+                        Edit
+                      </button>
+                      <button onClick={() => handleDelete(e.id)} className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest">
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -505,8 +549,7 @@ function TablesTab() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
           {tables.map(t => (
             <div key={t.id} className="relative aspect-square bg-slate-950 border border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-center transition-all hover:border-slate-600 group">
-              <div className="text-4xl mb-3 opacity-30 group-hover:opacity-100 transition-opacity">🪑</div>
-              <div className="font-black text-slate-200 uppercase tracking-widest text-xs">{t.name}</div>
+              <div className="font-black text-slate-200 uppercase tracking-widest text-lg">{t.name}</div>
               <div className="mt-2 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">Operational</span>
