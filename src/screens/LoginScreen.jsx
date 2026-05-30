@@ -145,9 +145,20 @@ export default function LoginScreen({ onLogin }) {
         display:'flex', alignItems:'center', gap:8
       }}>
         <div style={{
-          width:6, height:6, borderRadius:'50%', background:'#94a3b8'
+          width:6, height:6, borderRadius:'50%', background:'#156fed'
         }}/>
-        RFID Scanner Active
+        <a
+    href="https://stc-ks.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      color: '#0f53f2',
+      textDecoration: 'none',
+      fontWeight: 500
+    }}
+  >
+    Powered by STC
+  </a>
       </div>
     </div>
   )
