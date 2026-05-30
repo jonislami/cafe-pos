@@ -196,7 +196,7 @@ ipcMain.handle('orders:today', () => {
     FROM orders o
     LEFT JOIN employees e ON o.employee_id = e.id
     LEFT JOIN tables t ON o.table_id = t.id
-    WHERE date(o.created_at) = date('now')
+    WHERE date(o.created_at) = date('now') AND o.status = 'completed'
     ORDER BY o.created_at DESC
   `)
 })
@@ -208,6 +208,6 @@ ipcMain.handle('orders:stats', () => {
       COALESCE(SUM(total), 0) as total_revenue,
       COALESCE(AVG(total), 0) as avg_order
     FROM orders
-    WHERE date(created_at) = date('now')
+    WHERE date(created_at) = date('now') AND status = 'completed'
   `)
 })

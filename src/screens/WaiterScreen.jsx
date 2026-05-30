@@ -63,29 +63,25 @@ export default function WaiterScreen({ user, onLogout }) {
 
   function addProduct(p) {
     if (!selectedTable) return
-    setOrders(prev => {
-      const tableOrder = prev[selectedTable.id] || []
-      const existing   = tableOrder.find(x => x.name === p.name)
-      const updated    = existing
-        ? tableOrder.map(x => x.name === p.name ? { ...x, qty: x.qty + 1 } : x)
-        : [...tableOrder, { ...p, qty: 1 }]
+    const tableOrder = orders[selectedTable.id] || []
+    const existing   = tableOrder.find(x => x.name === p.name)
+    const updated    = existing
+      ? tableOrder.map(x => x.name === p.name ? { ...x, qty: x.qty + 1 } : x)
+      : [...tableOrder, { ...p, qty: 1 }]
 
-      syncTable(selectedTable.id, updated)
-      return { ...prev, [selectedTable.id]: updated }
-    })
+    setOrders(prev => ({ ...prev, [selectedTable.id]: updated }))
+    syncTable(selectedTable.id, updated)
   }
 
   function changeQty(name, delta) {
     if (!selectedTable) return
-    setOrders(prev => {
-      const tableOrder = prev[selectedTable.id] || []
-      const updated    = tableOrder
-        .map(x => x.name === name ? { ...x, qty: x.qty + delta } : x)
-        .filter(x => x.qty > 0)
+    const tableOrder = orders[selectedTable.id] || []
+    const updated    = tableOrder
+      .map(x => x.name === name ? { ...x, qty: x.qty + delta } : x)
+      .filter(x => x.qty > 0)
 
-      syncTable(selectedTable.id, updated)
-      return { ...prev, [selectedTable.id]: updated }
-    })
+    setOrders(prev => ({ ...prev, [selectedTable.id]: updated }))
+    syncTable(selectedTable.id, updated)
   }
 
   async function printReceipt() {

@@ -20,8 +20,31 @@ async function initialize() {
   }
 
   createTables()
+  runMigrations()
   seedData()
   saveDatabase(dbPath)
+}
+
+function runMigrations() {
+  // 1. Add product_icon to order_items if it doesn't exist
+  try {
+    const columns = query('PRAGMA table_info(order_items)')
+    if (!columns.find(c => c.name === 'product_icon')) {
+      db.run('ALTER TABLE order_items ADD COLUMN product_icon TEXT DEFAULT "☕"')
+    }
+  } catch (e) {
+    console.error('Migration (order_items) failed:', e)
+  }
+
+  // 2. Add status to orders if it doesn't exist
+  try {
+    const columns = query('PRAGMA table_info(orders)')
+    if (!columns.find(c => c.name === 'status')) {
+      db.run('ALTER TABLE orders ADD COLUMN status TEXT DEFAULT "open"')
+    }
+  } catch (e) {
+    console.error('Migration (orders) failed:', e)
+  }
 }
 
 function saveDatabase(dbPath) {
