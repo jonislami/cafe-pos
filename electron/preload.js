@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Auth
   rfidLogin: (uid) => ipcRenderer.invoke('auth:rfid', uid),
+  pinLogin: (pin) => ipcRenderer.invoke('auth:pin', pin),
 
   // Products
   getProducts:    ()  => ipcRenderer.invoke('products:all'),

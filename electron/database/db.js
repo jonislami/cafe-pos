@@ -36,7 +36,21 @@ function runMigrations() {
     console.error('Migration (order_items) failed:', e.message)
   }
 
-  // 2. Add status to orders if it doesn't exist
+  // 2. Add pin to employees if it doesn't exist
+  try {
+    const columns = query('PRAGMA table_info(employees)')
+    if (!columns.find(c => c.name === 'pin')) {
+      db.exec('ALTER TABLE employees ADD COLUMN pin TEXT')
+      // Set default pins for initial employees if they exist
+      db.run("UPDATE employees SET pin = '1234' WHERE name = 'Marco Romano'")
+      db.run("UPDATE employees SET pin = '1111' WHERE name = 'Sofia Greco'")
+      db.run("UPDATE employees SET pin = '2222' WHERE name = 'Luca Bianchi'")
+    }
+  } catch (e) {
+    console.error('Migration (employees) failed:', e.message)
+  }
+
+  // 3. Add status to orders if it doesn't exist
   // We default to 'completed' because existing orders in the DB are presumably finished.
   try {
     const columns = query('PRAGMA table_info(orders)')
@@ -68,6 +82,7 @@ function createTables() {
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
       name       TEXT NOT NULL,
       card_uid   TEXT UNIQUE,
+      pin        TEXT,
       role       TEXT NOT NULL,
       status     TEXT DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -121,10 +136,10 @@ function seedData() {
   if (count > 0) return  // Already seeded
 
   db.run(`
-    INSERT INTO employees (name, card_uid, role) VALUES
-      ('Marco Romano', 'A1B2C3D4', 'admin'),
-      ('Sofia Greco',  'E5F6G7H8', 'waiter'),
-      ('Luca Bianchi', 'I9J0K1L2', 'waiter');
+    INSERT INTO employees (name, card_uid, pin, role) VALUES
+      ('Marco Romano', 'A1B2C3D4', '1234', 'admin'),
+      ('Sofia Greco',  'E5F6G7H8', '1111', 'waiter'),
+      ('Luca Bianchi', 'I9J0K1L2', '2222', 'waiter');
 
     INSERT INTO products (name, category, price, stock, icon) VALUES
       ('Espresso',   'coffee', 1.50, 999, '☕'),
