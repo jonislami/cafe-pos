@@ -20,8 +20,37 @@ async function initialize() {
   }
 
   createTables()
+  runMigrations()
   seedData()
   saveDatabase(dbPath)
+}
+
+function runMigrations() {
+  // 1. Add product_icon to order_items if it doesn't exist
+  try {
+    const columns = query('PRAGMA table_info(order_items)')
+    if (!columns.find(c => c.name === 'product_icon')) {
+      db.exec('ALTER TABLE order_items ADD COLUMN product_icon TEXT DEFAULT "☕"')
+    }
+  } catch (e) {
+    console.error('Migration (order_items) failed:', e.message)
+  }
+
+  // 2. Add status to orders if it doesn't exist
+  // We default to 'completed' because existing orders in the DB are presumably finished.
+  try {
+    const columns = query('PRAGMA table_info(orders)')
+    if (!columns.find(c => c.name === 'status')) {
+      db.exec('ALTER TABLE orders ADD COLUMN status TEXT DEFAULT "completed"')
+    } else {
+      // Fix potentially wrong status from previous buggy migration
+      // Only set to completed if it was 'open' but has no items in the last few minutes
+      // (or just set all old ones to completed to be safe, since they were likely finalized)
+      db.run("UPDATE orders SET status = 'completed' WHERE status = 'open' AND created_at < datetime('now', '-30 minutes')")
+    }
+  } catch (e) {
+    console.error('Migration (orders) failed:', e.message)
+  }
 }
 
 function saveDatabase(dbPath) {
@@ -74,6 +103,7 @@ function createTables() {
       id           INTEGER PRIMARY KEY AUTOINCREMENT,
       order_id     INTEGER,
       product_name TEXT NOT NULL,
+      product_icon TEXT DEFAULT '☕',
       quantity     INTEGER NOT NULL,
       price        REAL NOT NULL
     );
@@ -129,19 +159,33 @@ function seedData() {
 
 // Run a write query (INSERT, UPDATE, DELETE, CREATE)
 function run(sql, params = []) {
-  db.run(sql, params)
-  saveDatabase()
-  return { changes: db.getRowsModified() }
+  try {
+    const stmt = db.prepare(sql)
+    stmt.run(params)
+    stmt.free()
+    saveDatabase()
+    return { changes: db.getRowsModified() }
+  } catch (e) {
+    console.error('Database RUN error:', e.message, { sql, params })
+    throw e
+  }
 }
 
 // Get all rows
 function query(sql, params = []) {
-  const result = db.exec(sql, params)
-  if (!result || result.length === 0) return []
-  const { columns, values } = result[0]
-  return values.map(row =>
-    Object.fromEntries(columns.map((col, i) => [col, row[i]]))
-  )
+  try {
+    const stmt = db.prepare(sql)
+    stmt.bind(params)
+    const rows = []
+    while (stmt.step()) {
+      rows.push(stmt.getAsObject())
+    }
+    stmt.free()
+    return rows
+  } catch (e) {
+    console.error('Database QUERY error:', e.message, { sql, params })
+    return []
+  }
 }
 
 // Get single row

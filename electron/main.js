@@ -114,19 +114,87 @@ ipcMain.handle('tables:delete', (_, id) => {
 
 // ── Orders ─────────────────────────────────────────────
 
-ipcMain.handle('orders:add', (_, o) => {
-  const result = db.run(
-    'INSERT INTO orders (table_id, employee_id, total) VALUES (?, ?, ?)',
-    [o.table_id, o.employee_id, o.total]
-  )
-  const orderId = db.get('SELECT last_insert_rowid() as id').id
-  for (const item of o.items) {
-    db.run(
-      'INSERT INTO order_items (order_id, product_name, quantity, price) VALUES (?, ?, ?, ?)',
-      [orderId, item.name, item.qty, item.price]
+ipcMain.handle('orders:get-active', () => {
+  const rows = db.query("SELECT * FROM orders WHERE status = 'open'")
+  const result = {}
+  for (const order of rows) {
+    const items = db.query(
+      'SELECT product_name as name, product_icon as icon, quantity as qty, price FROM order_items WHERE order_id = ?',
+      [order.id]
     )
+    result[order.table_id] = items
   }
-  return { orderId }
+  return result
+})
+
+ipcMain.handle('orders:sync-table', (_, { tableId, employeeId, items, total }) => {
+  console.log(`Syncing table ${tableId} with ${items.length} items`)
+  try {
+    // 1. Find existing open order for this table
+    let order = db.get("SELECT id FROM orders WHERE table_id = ? AND status = 'open'", [tableId])
+    let orderId
+
+    if (order) {
+      orderId = order.id
+      db.run('UPDATE orders SET total = ?, employee_id = ? WHERE id = ?', [total, employeeId, orderId])
+      db.run('DELETE FROM order_items WHERE order_id = ?', [orderId])
+    } else {
+      db.run(
+        'INSERT INTO orders (table_id, employee_id, total, status) VALUES (?, ?, ?, "open")',
+        [tableId, employeeId, total]
+      )
+      const res = db.get('SELECT last_insert_rowid() as id')
+      orderId = res.id
+    }
+
+    // 2. Insert items
+    for (const item of items) {
+      db.run(
+        'INSERT INTO order_items (order_id, product_name, product_icon, quantity, price) VALUES (?, ?, ?, ?, ?)',
+        [orderId, item.name, item.icon || '☕', item.qty, item.price]
+      )
+    }
+    return { orderId }
+  } catch (e) {
+    console.error('Failed to sync table:', e)
+    throw e
+  }
+})
+
+ipcMain.handle('orders:add', (_, o) => {
+  // Check if there's an existing open order for this table
+  const existing = db.get("SELECT id FROM orders WHERE table_id = ? AND status = 'open'", [o.table_id])
+
+  if (existing) {
+    // Update existing order to completed
+    db.run(
+      'UPDATE orders SET total = ?, employee_id = ?, status = "completed" WHERE id = ?',
+      [o.total, o.employee_id, existing.id]
+    )
+    // We assume items are already synced or we re-sync them here
+    db.run('DELETE FROM order_items WHERE order_id = ?', [existing.id])
+    for (const item of o.items) {
+      db.run(
+        'INSERT INTO order_items (order_id, product_name, product_icon, quantity, price) VALUES (?, ?, ?, ?, ?)',
+        [existing.id, item.name, item.icon, item.qty, item.price]
+      )
+    }
+    return { orderId: existing.id }
+  } else {
+    // Standard insert as completed
+    db.run(
+      'INSERT INTO orders (table_id, employee_id, total, status) VALUES (?, ?, ?, "completed")',
+      [o.table_id, o.employee_id, o.total]
+    )
+    const orderId = db.get('SELECT last_insert_rowid() as id').id
+    for (const item of o.items) {
+      db.run(
+        'INSERT INTO order_items (order_id, product_name, product_icon, quantity, price) VALUES (?, ?, ?, ?, ?)',
+        [orderId, item.name, item.icon, item.qty, item.price]
+      )
+    }
+    return { orderId }
+  }
 })
 
 ipcMain.handle('orders:today', () => {
@@ -135,7 +203,7 @@ ipcMain.handle('orders:today', () => {
     FROM orders o
     LEFT JOIN employees e ON o.employee_id = e.id
     LEFT JOIN tables t ON o.table_id = t.id
-    WHERE date(o.created_at) = date('now')
+    WHERE date(o.created_at) = date('now') AND o.status = 'completed'
     ORDER BY o.created_at DESC
   `)
 })
@@ -147,6 +215,6 @@ ipcMain.handle('orders:stats', () => {
       COALESCE(SUM(total), 0) as total_revenue,
       COALESCE(AVG(total), 0) as avg_order
     FROM orders
-    WHERE date(created_at) = date('now')
+    WHERE date(created_at) = date('now') AND status = 'completed'
   `)
 })
