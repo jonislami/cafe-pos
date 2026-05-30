@@ -15,13 +15,26 @@ export default function WaiterScreen({ user, onLogout }) {
       try {
         const prods = await window.electronAPI.getProducts()
         const tbls  = await window.electronAPI.getTables()
+        const activeOrders = await window.electronAPI.getActiveOrders()
         setProducts(prods)
         setTables(tbls)
+        setOrders(activeOrders || {})
       } catch(e) {
         console.error('Failed to load data:', e)
       }
     }
     loadData()
+
+    const interval = setInterval(async () => {
+      try {
+        const activeOrders = await window.electronAPI.getActiveOrders()
+        setOrders(activeOrders || {})
+      } catch (e) {
+        console.error('Failed to sync orders:', e)
+      }
+    }, 5000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const initials     = user.name.split(' ').map(n => n[0]).join('').slice(0,2)
@@ -34,25 +47,43 @@ export default function WaiterScreen({ user, onLogout }) {
     return (orders[tableId] || []).length > 0
   }
 
+  async function syncTable(tableId, items) {
+    try {
+      const total = items.reduce((s, i) => s + i.price * i.qty, 0)
+      await window.electronAPI.syncTableOrder({
+        tableId,
+        employeeId: user.id,
+        items,
+        total
+      })
+    } catch (e) {
+      console.error('Failed to sync table:', e)
+    }
+  }
+
   function addProduct(p) {
     if (!selectedTable) return
     setOrders(prev => {
       const tableOrder = prev[selectedTable.id] || []
-      const existing   = tableOrder.find(x => x.id === p.id)
+      const existing   = tableOrder.find(x => x.name === p.name)
       const updated    = existing
-        ? tableOrder.map(x => x.id === p.id ? { ...x, qty: x.qty + 1 } : x)
+        ? tableOrder.map(x => x.name === p.name ? { ...x, qty: x.qty + 1 } : x)
         : [...tableOrder, { ...p, qty: 1 }]
+
+      syncTable(selectedTable.id, updated)
       return { ...prev, [selectedTable.id]: updated }
     })
   }
 
-  function changeQty(id, delta) {
+  function changeQty(name, delta) {
     if (!selectedTable) return
     setOrders(prev => {
       const tableOrder = prev[selectedTable.id] || []
       const updated    = tableOrder
-        .map(x => x.id === id ? { ...x, qty: x.qty + delta } : x)
+        .map(x => x.name === name ? { ...x, qty: x.qty + delta } : x)
         .filter(x => x.qty > 0)
+
+      syncTable(selectedTable.id, updated)
       return { ...prev, [selectedTable.id]: updated }
     })
   }
@@ -66,6 +97,7 @@ export default function WaiterScreen({ user, onLogout }) {
         total:       total,
         items:       currentOrder.map(i => ({
           name:  i.name,
+          icon:  i.icon,
           qty:   i.qty,
           price: i.price
         }))
@@ -259,14 +291,14 @@ export default function WaiterScreen({ user, onLogout }) {
                     Tap a product to add
                   </div>
                 ) : currentOrder.map(i => (
-                  <div key={i.id} style={{
+                  <div key={i.name} style={{
                     display:'flex', alignItems:'center', gap:6,
                     padding:8, background:'#252836',
                     borderRadius:8, marginBottom:6
                   }}>
                     <span style={{ fontSize:16 }}>{i.icon}</span>
                     <span style={{ flex:1, fontSize:11, fontWeight:500 }}>{i.name}</span>
-                    <button onClick={() => changeQty(i.id,-1)} style={{
+                    <button onClick={() => changeQty(i.name,-1)} style={{
                       width:20, height:20, background:'#1e2130',
                       border:'none', borderRadius:4,
                       cursor:'pointer', color:'#f1f5f9', fontSize:14
@@ -274,7 +306,7 @@ export default function WaiterScreen({ user, onLogout }) {
                     <span style={{ fontSize:12, fontWeight:600, minWidth:14, textAlign:'center' }}>
                       {i.qty}
                     </span>
-                    <button onClick={() => changeQty(i.id,1)} style={{
+                    <button onClick={() => changeQty(i.name,1)} style={{
                       width:20, height:20, background:'#1e2130',
                       border:'none', borderRadius:4,
                       cursor:'pointer', color:'#f1f5f9', fontSize:14
@@ -335,7 +367,7 @@ export default function WaiterScreen({ user, onLogout }) {
               <span>{new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
             </div>
             {currentOrder.map(i => (
-              <div key={i.id} style={{ display:'flex', justifyContent:'space-between', padding:'3px 0' }}>
+              <div key={i.name} style={{ display:'flex', justifyContent:'space-between', padding:'3px 0' }}>
                 <span>{i.qty}x {i.name}</span>
                 <span>€{(i.price * i.qty).toFixed(2)}</span>
               </div>

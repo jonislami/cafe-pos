@@ -74,6 +74,7 @@ function createTables() {
       id           INTEGER PRIMARY KEY AUTOINCREMENT,
       order_id     INTEGER,
       product_name TEXT NOT NULL,
+      product_icon TEXT DEFAULT '☕',
       quantity     INTEGER NOT NULL,
       price        REAL NOT NULL
     );
@@ -136,12 +137,14 @@ function run(sql, params = []) {
 
 // Get all rows
 function query(sql, params = []) {
-  const result = db.exec(sql, params)
-  if (!result || result.length === 0) return []
-  const { columns, values } = result[0]
-  return values.map(row =>
-    Object.fromEntries(columns.map((col, i) => [col, row[i]]))
-  )
+  const stmt = db.prepare(sql)
+  stmt.bind(params)
+  const rows = []
+  while (stmt.step()) {
+    rows.push(stmt.getAsObject())
+  }
+  stmt.free()
+  return rows
 }
 
 // Get single row

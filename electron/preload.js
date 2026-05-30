@@ -30,4 +30,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addOrder:     (o) => ipcRenderer.invoke('orders:add',   o),
   getTodayOrders: () => ipcRenderer.invoke('orders:today'),
   getOrderStats:  () => ipcRenderer.invoke('orders:stats'),
+  getActiveOrders: () => ipcRenderer.invoke('orders:get-active'),
+  syncTableOrder:  (data) => ipcRenderer.invoke('orders:sync-table', data),
 })
