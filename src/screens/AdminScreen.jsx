@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from '../LanguageContext'
 
 const TABS = [
-  'Dashboard','Products','Employees','Tables','Reports','Settings'
+  'dashboard', 'products', 'employees', 'tables', 'reports', 'settings'
 ]
 
 export default function AdminScreen({ user, onLogout }) {
-  const [tab, setTab] = useState('Dashboard')
+  const { t } = useTranslation()
+  const [tab, setTab] = useState('dashboard')
 
   return (
     <div style={{
@@ -32,30 +34,30 @@ export default function AdminScreen({ user, onLogout }) {
             }}>C</div>
             <div>
               <div style={{ fontSize:14, fontWeight:800, color:'#0f172a', letterSpacing:'-0.5px' }}>CaféPOS</div>
-              <div style={{ fontSize:9, color:'#94a3b8', fontWeight:700, letterSpacing:'0.15em', textTransform:'uppercase' }}>Admin</div>
+              <div style={{ fontSize:9, color:'#94a3b8', fontWeight:700, letterSpacing:'0.15em', textTransform:'uppercase' }}>{t('admin')}</div>
             </div>
           </div>
         </div>
 
         {/* Nav */}
         <nav style={{ flex:1, padding:'0 10px', display:'flex', flexDirection:'column', gap:2 }}>
-          {TABS.map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
+          {TABS.map(tabKey => (
+            <button key={tabKey} onClick={() => setTab(tabKey)} style={{
               width:'100%', padding:'10px 14px',
-              background: tab===t ? 'rgba(15,23,42,0.06)' : 'transparent',
-              border: tab===t ? '1px solid rgba(15,23,42,0.12)' : '1px solid transparent',
+              background: tab===tabKey ? 'rgba(15,23,42,0.06)' : 'transparent',
+              border: tab===tabKey ? '1px solid rgba(15,23,42,0.12)' : '1px solid transparent',
               borderRadius:10, cursor:'pointer', textAlign:'left',
-              fontSize:13, fontWeight: tab===t ? 600 : 400,
-              color: tab===t ? '#0f172a' : '#64748b',
+              fontSize:13, fontWeight: tab===tabKey ? 600 : 400,
+              color: tab===tabKey ? '#0f172a' : '#64748b',
               transition:'all .15s', display:'flex', alignItems:'center',
               gap:10, fontFamily:'inherit'
             }}>
               <span style={{
                 width:6, height:6, borderRadius:'50%', flexShrink:0,
-                background: tab===t ? '#0f172a' : '#e2e8f0',
+                background: tab===tabKey ? '#0f172a' : '#e2e8f0',
                 transition:'all .15s'
               }}/>
-              {t}
+              {t(tabKey)}
             </button>
           ))}
         </nav>
@@ -77,7 +79,7 @@ export default function AdminScreen({ user, onLogout }) {
               </div>
               <div style={{ minWidth:0 }}>
                 <div style={{ fontSize:12, fontWeight:600, color:'#0f172a', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user.name}</div>
-                <div style={{ fontSize:10, color:'#94a3b8' }}>Administrator</div>
+                <div style={{ fontSize:10, color:'#94a3b8' }}>{t('administrator')}</div>
               </div>
             </div>
             <button onClick={onLogout} style={{
@@ -89,7 +91,7 @@ export default function AdminScreen({ user, onLogout }) {
             }}
             onMouseEnter={e => e.target.style.background='#fef2f2'}
             onMouseLeave={e => e.target.style.background='transparent'}
-            >Sign Out</button>
+            >{t('signOut')}</button>
           </div>
         </div>
       </aside>
@@ -103,23 +105,18 @@ export default function AdminScreen({ user, onLogout }) {
             <h1 style={{
               fontSize:26, fontWeight:800, color:'#0f172a',
               letterSpacing:'-0.5px', margin:0, marginBottom:4
-            }}>{tab}</h1>
+            }}>{t(tab)}</h1>
             <p style={{ fontSize:13, color:'#94a3b8', margin:0 }}>
-              {tab==='Dashboard' && "Live overview of today's performance"}
-              {tab==='Products'  && 'Manage your menu and pricing'}
-              {tab==='Employees' && 'Staff accounts and access control'}
-              {tab==='Tables'    && 'Configure your floor layout'}
-              {tab==='Reports'   && 'Sales history and analytics'}
-              {tab==='Settings'  && 'Business configuration'}
+              {t(`${tab}Desc`)}
             </p>
           </div>
 
-          {tab==='Dashboard' && <Dashboard />}
-          {tab==='Products'  && <Products />}
-          {tab==='Employees' && <Employees />}
-          {tab==='Tables'    && <TablesTab />}
-          {tab==='Reports'   && <Reports />}
-          {tab==='Settings'  && <Settings />}
+          {tab==='dashboard' && <Dashboard />}
+          {tab==='products'  && <Products />}
+          {tab==='employees' && <Employees />}
+          {tab==='tables'    && <TablesTab />}
+          {tab==='reports'   && <Reports />}
+          {tab==='settings'  && <Settings />}
         </div>
       </main>
     </div>
@@ -200,6 +197,7 @@ function THead({ cols, rightLast=false }) {
 // ── Dashboard ──────────────────────────────────────────────────────
 
 function Dashboard() {
+  const { t } = useTranslation()
   const [stats, setStats] = useState({ total_orders:0, total_revenue:0, avg_order:0 })
 
   useEffect(() => {
@@ -211,9 +209,9 @@ function Dashboard() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:14 }}>
-        <StatCard title="Today's Revenue" value={`€${Number(stats.total_revenue).toFixed(2)}`} sub="Live total" />
-        <StatCard title="Orders Today"    value={stats.total_orders} sub="Completed" />
-        <StatCard title="Avg Order"       value={`€${Number(stats.avg_order).toFixed(2)}`} sub="Per transaction" />
+        <StatCard title={t('todaysRevenue')} value={`€${Number(stats.total_revenue).toFixed(2)}`} sub={t('liveTotal')} />
+        <StatCard title={t('ordersToday')}    value={stats.total_orders} sub={t('completed')} />
+        <StatCard title={t('avgOrder')}       value={`€${Number(stats.avg_order).toFixed(2)}`} sub={t('perTransaction')} />
       </div>
       <RecentOrders />
     </div>
@@ -221,6 +219,7 @@ function Dashboard() {
 }
 
 function RecentOrders() {
+  const { t } = useTranslation()
   const [orders, setOrders] = useState([])
 
   useEffect(() => {
@@ -236,17 +235,17 @@ function RecentOrders() {
         display:'flex', justifyContent:'space-between', alignItems:'center'
       }}>
         <span style={{ fontSize:12, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.1em' }}>
-          Recent Orders
+          {t('recentOrders')}
         </span>
         <span style={{ fontSize:11, color:'#cbd5e1' }}>Today</span>
       </div>
       {orders.length === 0 ? (
         <div style={{ padding:32, textAlign:'center', color:'#94a3b8', fontSize:13 }}>
-          No orders yet today
+          {t('noOrdersYet')}
         </div>
       ) : (
         <table style={{ width:'100%', borderCollapse:'collapse' }}>
-          <THead cols={['Time','Table','Waiter','Total']} rightLast />
+          <THead cols={[t('time'),t('tables'),t('waiter'),t('total')]} rightLast />
           <tbody>
             {orders.slice(0,8).map(o => (
               <Row key={o.id}>
@@ -270,6 +269,7 @@ function RecentOrders() {
 // ── Products ───────────────────────────────────────────────────────
 
 function Products() {
+  const { t } = useTranslation()
   const [items, setItems]       = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId]     = useState(null)
@@ -306,53 +306,53 @@ function Products() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
       <div style={{ display:'flex', justifyContent:'flex-end' }}>
-        {!showForm && <Btn onClick={() => setShowForm(true)}>+ Add Product</Btn>}
+        {!showForm && <Btn onClick={() => setShowForm(true)}>+ {t('addProduct')}</Btn>}
       </div>
 
       {showForm && (
         <div style={{ ...card, padding:24, borderColor:'#bfdbfe' }}>
           <div style={{ fontSize:14, fontWeight:700, color:'#0f172a', marginBottom:18 }}>
-            {editId ? 'Edit Product' : 'New Product'}
+            {editId ? t('editProduct') : t('newProduct')}
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
             <div>
-              <span style={label}>Name</span>
+              <span style={label}>{t('productName')}</span>
               <input style={inp} value={form.name} placeholder="e.g. Espresso"
                 onChange={e=>setForm(f=>({...f,name:e.target.value}))} />
             </div>
             <div>
-              <span style={label}>Category</span>
+              <span style={label}>{t('category')}</span>
               <select style={inp} value={form.category}
                 onChange={e=>setForm(f=>({...f,category:e.target.value}))}>
                 {['coffee','drinks','food','alcohol','desserts'].map(c=>(
-                  <option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>
+                  <option key={c} value={c}>{t(`cat_${c}`)}</option>
                 ))}
               </select>
             </div>
             <div>
-              <span style={label}>Price (€)</span>
+              <span style={label}>{t('price')} (€)</span>
               <input style={inp} type="number" step="0.10" value={form.price} placeholder="0.00"
                 onChange={e=>setForm(f=>({...f,price:e.target.value}))} />
             </div>
             <div>
-              <span style={label}>Stock</span>
+              <span style={label}>{t('stock')}</span>
               <input style={inp} type="number" value={form.stock} placeholder="99"
                 onChange={e=>setForm(f=>({...f,stock:e.target.value}))} />
             </div>
           </div>
           <div style={{ display:'flex', gap:10, marginTop:18 }}>
-            <Btn onClick={handleSubmit}>{editId ? 'Update' : 'Save'}</Btn>
-            <Btn variant="secondary" onClick={cancel}>Cancel</Btn>
+            <Btn onClick={handleSubmit}>{editId ? t('edit') : t('save')}</Btn>
+            <Btn variant="secondary" onClick={cancel}>{t('cancel')}</Btn>
           </div>
         </div>
       )}
 
       <div style={{ ...card, overflow:'hidden' }}>
         <table style={{ width:'100%', borderCollapse:'collapse' }}>
-          <THead cols={['Product','Category','Price','Stock','']} />
+          <THead cols={[t('productName'),t('category'),t('price'),t('stock'),'']} />
           <tbody>
             {items.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding:32, textAlign:'center', color:'#94a3b8', fontSize:13 }}>No products yet</td></tr>
+              <tr><td colSpan={5} style={{ padding:32, textAlign:'center', color:'#94a3b8', fontSize:13 }}>{t('noProducts')}</td></tr>
             ) : items.map(i => (
               <Row key={i.id}>
                 <td style={{ padding:'13px 20px', fontSize:13, fontWeight:600, color:'#0f172a' }}>{i.name}</td>
@@ -361,7 +361,7 @@ function Products() {
                     padding:'3px 10px', borderRadius:20, fontSize:10, fontWeight:700,
                     textTransform:'uppercase', letterSpacing:'0.06em',
                     background:'#f1f5f9', color:'#64748b'
-                  }}>{i.category}</span>
+                  }}>{t(`cat_${i.category}`)}</span>
                 </td>
                 <td style={{ padding:'13px 20px', fontSize:14, fontWeight:700, color:'#0f172a' }}>
                   €{Number(i.price).toFixed(2)}
@@ -369,12 +369,12 @@ function Products() {
                 <td style={{ padding:'13px 20px', fontSize:13, color:'#64748b' }}>{i.stock}</td>
                 <td style={{ padding:'13px 20px' }}>
                   <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                    <Btn variant="secondary" onClick={() => startEdit(i)} style={{ padding:'5px 12px' }}>Edit</Btn>
+                    <Btn variant="secondary" onClick={() => startEdit(i)} style={{ padding:'5px 12px' }}>{t('edit')}</Btn>
                     <Btn variant="danger" onClick={async () => {
-                      if(window.confirm('Delete this product?')) {
+                      if(window.confirm(t('deleteConfirm'))) {
                         await window.electronAPI.deleteProduct(i.id); load()
                       }
-                    }} style={{ padding:'5px 12px' }}>Delete</Btn>
+                    }} style={{ padding:'5px 12px' }}>{t('delete')}</Btn>
                   </div>
                 </td>
               </Row>
@@ -389,6 +389,7 @@ function Products() {
 // ── Employees ──────────────────────────────────────────────────────
 
 function Employees() {
+  const { t } = useTranslation()
   const [emps, setEmps]         = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId]     = useState(null)
@@ -422,62 +423,62 @@ function Employees() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
       <div style={{ display:'flex', justifyContent:'flex-end' }}>
-        {!showForm && <Btn onClick={() => setShowForm(true)}>+ Add Staff</Btn>}
+        {!showForm && <Btn onClick={() => setShowForm(true)}>+ {t('addStaff')}</Btn>}
       </div>
 
       {showForm && (
         <div style={{ ...card, padding:24, borderColor:'#bfdbfe' }}>
           <div style={{ fontSize:14, fontWeight:700, color:'#0f172a', marginBottom:18 }}>
-            {editId ? 'Edit Employee' : 'New Employee'}
+            {editId ? t('editEmployee') : t('newEmployee')}
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
             <div>
-              <span style={label}>Full Name</span>
+              <span style={label}>{t('fullName')}</span>
               <input style={inp} value={form.name} placeholder="e.g. John Smith"
                 onChange={e=>setForm(f=>({...f,name:e.target.value}))} />
             </div>
             <div>
-              <span style={label}>Role</span>
+              <span style={label}>{t('role')}</span>
               <select style={inp} value={form.role}
                 onChange={e=>setForm(f=>({...f,role:e.target.value}))}>
-                <option value="waiter">Waiter</option>
-                <option value="admin">Admin</option>
-                <option value="bartender">Bartender</option>
+                <option value="waiter">{t('waiter')}</option>
+                <option value="admin">{t('admin')}</option>
+                <option value="bartender">{t('bartender')}</option>
               </select>
             </div>
             <div>
-              <span style={label}>PIN Code</span>
+              <span style={label}>{t('pinCode')}</span>
               <input style={inp} type="password" maxLength={4} value={form.pin}
                 placeholder="4 digit PIN"
                 onChange={e=>setForm(f=>({...f,pin:e.target.value}))} />
             </div>
             <div>
-              <span style={label}>RFID Card UID <span style={{ fontWeight:400, textTransform:'none', letterSpacing:0 }}>(optional)</span></span>
+              <span style={label}>{t('rfidCard')} <span style={{ fontWeight:400, textTransform:'none', letterSpacing:0 }}>{t('optional')}</span></span>
               <input style={inp} value={form.card_uid} placeholder="Add when card arrives"
                 onChange={e=>setForm(f=>({...f,card_uid:e.target.value}))} />
             </div>
             <div>
-              <span style={label}>Status</span>
+              <span style={label}>{t('status')}</span>
               <select style={inp} value={form.status}
                 onChange={e=>setForm(f=>({...f,status:e.target.value}))}>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="active">{t('active')}</option>
+                <option value="inactive">{t('inactive')}</option>
               </select>
             </div>
           </div>
           <div style={{ display:'flex', gap:10, marginTop:18 }}>
-            <Btn onClick={handleSubmit}>{editId ? 'Update' : 'Save'}</Btn>
-            <Btn variant="secondary" onClick={cancel}>Cancel</Btn>
+            <Btn onClick={handleSubmit}>{editId ? t('edit') : t('save')}</Btn>
+            <Btn variant="secondary" onClick={cancel}>{t('cancel')}</Btn>
           </div>
         </div>
       )}
 
       <div style={{ ...card, overflow:'hidden' }}>
         <table style={{ width:'100%', borderCollapse:'collapse' }}>
-          <THead cols={['Name','Role','PIN','RFID Card','Status','']} />
+          <THead cols={[t('fullName'),t('role'),t('pinCode'),t('rfidCard'),t('status'),'']} />
           <tbody>
             {emps.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding:32, textAlign:'center', color:'#94a3b8', fontSize:13 }}>No employees yet</td></tr>
+              <tr><td colSpan={6} style={{ padding:32, textAlign:'center', color:'#94a3b8', fontSize:13 }}>{t('noEmployees')}</td></tr>
             ) : emps.map(e => (
               <Row key={e.id}>
                 <td style={{ padding:'13px 20px', fontSize:13, fontWeight:600, color:'#0f172a' }}>{e.name}</td>
@@ -487,23 +488,23 @@ function Employees() {
                     textTransform:'uppercase',
                     background: e.role==='admin' ? '#eff6ff' : '#f8fafc',
                     color:      e.role==='admin' ? '#3b82f6' : '#64748b'
-                  }}>{e.role}</span>
+                  }}>{t(e.role)}</span>
                 </td>
                 <td style={{ padding:'13px 20px', fontSize:11, fontFamily:'monospace', color:'#94a3b8' }}>
                   {e.pin ? '••••' : '—'}
                 </td>
                 <td style={{ padding:'13px 20px', fontSize:11, fontFamily:'monospace', color:'#94a3b8' }}>
-                  {e.card_uid || '— not set'}
+                  {e.card_uid || `— ${t('none')}`}
                 </td>
                 <td style={{ padding:'13px 20px' }}>
                   <span style={{
                     padding:'3px 10px', borderRadius:20, fontSize:10, fontWeight:700,
                     background: e.status==='active' ? '#f0fdf4' : '#fef2f2',
                     color:      e.status==='active' ? '#16a34a' : '#ef4444'
-                  }}>{e.status}</span>
+                  }}>{t(e.status)}</span>
                 </td>
                 <td style={{ padding:'13px 20px' }}>
-                  <Btn variant="secondary" onClick={() => startEdit(e)} style={{ padding:'5px 12px' }}>Edit</Btn>
+                  <Btn variant="secondary" onClick={() => startEdit(e)} style={{ padding:'5px 12px' }}>{t('edit')}</Btn>
                 </td>
               </Row>
             ))}
@@ -517,6 +518,7 @@ function Employees() {
 // ── Tables ─────────────────────────────────────────────────────────
 
 function TablesTab() {
+  const { t } = useTranslation()
   const [tables, setTables]     = useState([])
   const [newName, setNewName]   = useState('')
   const [showForm, setShowForm] = useState(false)
@@ -537,39 +539,39 @@ function TablesTab() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
       <div style={{ display:'flex', justifyContent:'flex-end' }}>
-        {!showForm && <Btn onClick={() => setShowForm(true)}>+ Add Table</Btn>}
+        {!showForm && <Btn onClick={() => setShowForm(true)}>+ {t('addTable')}</Btn>}
       </div>
 
       {showForm && (
         <div style={{ ...card, padding:20, display:'flex', gap:12, alignItems:'flex-end', maxWidth:380, borderColor:'#bfdbfe' }}>
           <div style={{ flex:1 }}>
-            <span style={label}>Table Name</span>
+            <span style={label}>{t('tableName')}</span>
             <input style={inp} value={newName} placeholder="e.g. Table 11 or VIP Room"
               onChange={e=>setNewName(e.target.value)}
               onKeyDown={e=>e.key==='Enter'&&handleAdd()} />
           </div>
-          <Btn onClick={handleAdd}>Add</Btn>
-          <Btn variant="secondary" onClick={() => setShowForm(false)}>Cancel</Btn>
+          <Btn onClick={handleAdd}>{t('save')}</Btn>
+          <Btn variant="secondary" onClick={() => setShowForm(false)}>{t('cancel')}</Btn>
         </div>
       )}
 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(110px,1fr))', gap:10 }}>
         {tables.length === 0 ? (
           <div style={{ gridColumn:'1/-1', padding:32, textAlign:'center', color:'#94a3b8', fontSize:13 }}>
-            No tables yet
+            {t('noTables')}
           </div>
-        ) : tables.map(t => (
-          <div key={t.id} style={{
+        ) : tables.map(tbl => (
+          <div key={tbl.id} style={{
             ...card, padding:'18px 14px', textAlign:'center',
             position:'relative'
           }}>
-            <div style={{ fontSize:13, fontWeight:700, color:'#0f172a', marginBottom:4 }}>{t.name}</div>
+            <div style={{ fontSize:13, fontWeight:700, color:'#0f172a', marginBottom:4 }}>{tbl.name}</div>
             <div style={{ fontSize:9, fontWeight:700, color:'#16a34a', textTransform:'uppercase', letterSpacing:'0.12em' }}>
-              Active
+              {t('active')}
             </div>
             <button onClick={async () => {
-              if(window.confirm('Remove this table?')) {
-                await window.electronAPI.deleteTable(t.id); load()
+              if(window.confirm(t('removeTableConfirm'))) {
+                await window.electronAPI.deleteTable(tbl.id); load()
               }
             }} style={{
               position:'absolute', top:8, right:8,
@@ -588,6 +590,7 @@ function TablesTab() {
 // ── Reports ────────────────────────────────────────────────────────
 
 function Reports() {
+  const { t } = useTranslation()
   const [stats, setStats]   = useState({ total_orders:0, total_revenue:0, avg_order:0 })
   const [orders, setOrders] = useState([])
 
@@ -599,9 +602,9 @@ function Reports() {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:14 }}>
-        <StatCard title="Today's Revenue" value={`€${Number(stats.total_revenue).toFixed(2)}`} />
-        <StatCard title="Total Orders"    value={stats.total_orders} />
-        <StatCard title="Avg Order"       value={`€${Number(stats.avg_order).toFixed(2)}`} />
+        <StatCard title={t('todaysRevenue')} value={`€${Number(stats.total_revenue).toFixed(2)}`} />
+        <StatCard title={t('ordersToday')}    value={stats.total_orders} />
+        <StatCard title={t('avgOrder')}       value={`€${Number(stats.avg_order).toFixed(2)}`} />
       </div>
 
       <div style={{ ...card, overflow:'hidden' }}>
@@ -610,14 +613,14 @@ function Reports() {
           display:'flex', justifyContent:'space-between', alignItems:'center'
         }}>
           <span style={{ fontSize:12, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.1em' }}>
-            All Orders Today ({orders.length})
+            {t('allOrdersToday')} ({orders.length})
           </span>
         </div>
         {orders.length === 0 ? (
-          <div style={{ padding:32, textAlign:'center', color:'#94a3b8', fontSize:13 }}>No orders today</div>
+          <div style={{ padding:32, textAlign:'center', color:'#94a3b8', fontSize:13 }}>{t('noOrdersYet')}</div>
         ) : (
           <table style={{ width:'100%', borderCollapse:'collapse' }}>
-            <THead cols={['Time','Table','Waiter','Total']} rightLast />
+            <THead cols={[t('time'),t('tables'),t('waiter'),t('total')]} rightLast />
             <tbody>
               {orders.map(o => (
                 <Row key={o.id}>
@@ -642,51 +645,83 @@ function Reports() {
 // ── Settings ───────────────────────────────────────────────────────
 
 function Settings() {
+  const { t, lang, changeLanguage, settings, setSettings } = useTranslation()
   const [form, setForm] = useState({
-    cafe_name:'Caffè Centro', address:'Via Roma 12, Milano',
-    vat:'12345678901', footer:'Grazie! Thank you!'
+    cafe_name: '', address: '',
+    vat_number: '', footer: '',
+    language: 'en'
   })
   const [saved, setSaved] = useState(false)
 
-  function handleSave() {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+  useEffect(() => {
+    if (settings) {
+      setForm({
+        cafe_name: settings.cafe_name || '',
+        address: settings.address || '',
+        vat_number: settings.vat_number || '',
+        footer: settings.footer || '',
+        language: settings.language || 'en'
+      })
+    }
+  }, [settings])
+
+  async function handleSave() {
+    try {
+      await window.electronAPI.updateSettings(form)
+      setSettings(prev => ({ ...prev, ...form }))
+      if (form.language !== lang) {
+        changeLanguage(form.language)
+      }
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   const fields = [
-    { label:'Business Name',    key:'cafe_name',  placeholder:'My Café' },
-    { label:'Address',          key:'address',    placeholder:'Street, City' },
-    { label:'VAT / Tax Number', key:'vat',        placeholder:'12345678901' },
-    { label:'Receipt Footer',   key:'footer',     placeholder:'Thank you!' },
+    { label: t('businessName'), key: 'cafe_name', placeholder: 'My Café' },
+    { label: t('address'), key: 'address', placeholder: 'Street, City' },
+    { label: t('vatNumber'), key: 'vat_number', placeholder: '12345678901' },
+    { label: t('receiptFooter'), key: 'footer', placeholder: 'Thank you!' },
   ]
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:14, maxWidth:520 }}>
-      <div style={{ ...card, padding:24 }}>
-        <div style={{ fontSize:12, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:20 }}>
-          Café Configuration
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 520 }}>
+      <div style={{ ...card, padding: 24 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>
+          {t('cafeConfiguration')}
         </div>
-        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {fields.map(f => (
             <div key={f.key}>
               <span style={label}>{f.label}</span>
               <input style={inp} value={form[f.key]} placeholder={f.placeholder}
-                onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))} />
+                onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} />
             </div>
           ))}
+
+          <div>
+            <span style={label}>{t('language')}</span>
+            <select style={inp} value={form.language}
+              onChange={e => setForm(p => ({ ...p, language: e.target.value }))}>
+              <option value="en">English</option>
+              <option value="it">Italiano</option>
+            </select>
+          </div>
         </div>
-        <div style={{ marginTop:20, paddingTop:18, borderTop:'1px solid #e2e8f0' }}>
+        <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid #e2e8f0' }}>
           <Btn onClick={handleSave} style={{ background: saved ? '#16a34a' : '#0f172a' }}>
-            {saved ? 'Saved!' : 'Save Configuration'}
+            {saved ? t('saved') : t('saveConfiguration')}
           </Btn>
         </div>
       </div>
 
-      <div style={{ ...card, padding:20 }}>
-        <div style={{ fontSize:12, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:14 }}>
-          Printer
+      <div style={{ ...card, padding: 20 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 14 }}>
+          {t('printer')}
         </div>
-        <span style={label}>Thermal Printer</span>
+        <span style={label}>{t('thermalPrinter')}</span>
         <select style={{ ...inp, width:'auto', minWidth:260 }}>
           <option>USB — Epson TM-T20III</option>
           <option>LAN — Star TSP143</option>
@@ -700,7 +735,7 @@ function Settings() {
         fontSize:12, color:'#16a34a',
         display:'flex', alignItems:'center', gap:8
       }}>
-        Database connected · Fully offline · No internet required
+        {t('dbConnected')}
       </div>
     </div>
   )

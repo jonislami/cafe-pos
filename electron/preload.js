@@ -38,4 +38,8 @@ getLicenseInfo:  ()    => ipcRenderer.invoke('license:info'),
   getOrderStats:  () => ipcRenderer.invoke('orders:stats'),
   getActiveOrders: () => ipcRenderer.invoke('orders:get-active'),
   syncTableOrder:  (data) => ipcRenderer.invoke('orders:sync-table', data),
+
+  // Settings
+  getSettings:    () => ipcRenderer.invoke('settings:all'),
+  updateSettings: (s) => ipcRenderer.invoke('settings:update', s),
 })

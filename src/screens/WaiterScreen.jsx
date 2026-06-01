@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from '../LanguageContext'
 
 const CATS = ['All','coffee','drinks','food','alcohol','desserts']
 
 export default function WaiterScreen({ user, onLogout }) {
+  const { t, settings } = useTranslation()
   const [products, setProducts]           = useState([])
   const [tables, setTables]               = useState([])
   const [selectedTable, setSelectedTable] = useState(null)
@@ -127,7 +129,7 @@ export default function WaiterScreen({ user, onLogout }) {
                 fontSize:11, fontWeight:800, color:'#fff', marginBottom:12
               }}>{initials}</div>
               <div style={{ fontSize:10, color:'#94a3b8', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em' }}>
-                Tables
+                {t('tables')}
               </div>
             </div>
           ) : (
@@ -161,7 +163,7 @@ export default function WaiterScreen({ user, onLogout }) {
                 }}>{t.name}</div>
                 {!selectedTable && (
                   <div style={{ fontSize:9, marginTop:2, color: hasItems ? '#16a34a' : '#cbd5e1', fontWeight:600 }}>
-                    {hasItems ? `${qty} items` : 'Free'}
+                    {hasItems ? `${qty} ${t('items')}` : t('free')}
                   </div>
                 )}
                 {selectedTable && hasItems && !isSelected && (
@@ -187,7 +189,7 @@ export default function WaiterScreen({ user, onLogout }) {
           }}
           onMouseEnter={e => { e.currentTarget.style.background='#fef2f2'; e.currentTarget.style.color='#ef4444' }}
           onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#fca5a5' }}
-          >{selectedTable ? 'Out' : 'Logout'}</button>
+          >{selectedTable ? t('out') : t('signOut')}</button>
         </div>
       </aside>
 
@@ -225,7 +227,7 @@ export default function WaiterScreen({ user, onLogout }) {
                   letterSpacing:'0.08em', fontFamily:'inherit', transition:'all .12s',
                   background: cat===c ? '#0f172a' : '#f1f5f9',
                   color:      cat===c ? '#fff' : '#64748b',
-                }}>{c}</button>
+                }}>{c === 'All' ? t('all') : t(`cat_${c}`)}</button>
               ))}
             </div>
 
@@ -266,7 +268,7 @@ export default function WaiterScreen({ user, onLogout }) {
             }}>
               <div>
                 <div style={{ fontSize:10, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.1em' }}>
-                  Order
+                  {t('order')}
                 </div>
                 <div style={{ fontSize:14, fontWeight:700, color:'#0f172a', marginTop:2 }}>
                   {selectedTable.name}
@@ -284,7 +286,7 @@ export default function WaiterScreen({ user, onLogout }) {
                 }}
                 onMouseEnter={e => e.currentTarget.style.color='#ef4444'}
                 onMouseLeave={e => e.currentTarget.style.color='#cbd5e1'}
-                >Clear</button>
+                >{t('clear')}</button>
               )}
             </div>
 
@@ -296,7 +298,7 @@ export default function WaiterScreen({ user, onLogout }) {
                   justifyContent:'center', height:'100%', gap:8, color:'#e2e8f0'
                 }}>
                   <div style={{ fontSize:12, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em' }}>
-                    No items yet
+                    {t('noItemsYet')}
                   </div>
                 </div>
               ) : currentOrder.map(i => (
@@ -344,8 +346,8 @@ export default function WaiterScreen({ user, onLogout }) {
             }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:14 }}>
                 <div>
-                  <div style={{ fontSize:9, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:2 }}>Total</div>
-                  <div style={{ fontSize:10, color:'#cbd5e1' }}>{itemCount} item{itemCount!==1?'s':''}</div>
+                  <div style={{ fontSize:9, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:2 }}>{t('total')}</div>
+                  <div style={{ fontSize:10, color:'#cbd5e1' }}>{itemCount} {itemCount!==1 ? t('items') : t('item')}</div>
                 </div>
                 <div style={{ fontSize:30, fontWeight:900, color:'#0f172a', letterSpacing:'-1px' }}>
                   €{total.toFixed(2)}
@@ -362,7 +364,7 @@ export default function WaiterScreen({ user, onLogout }) {
                 fontFamily:'inherit', transition:'all .15s',
                 boxShadow: currentOrder.length>0 ? '0 4px 14px rgba(0,0,0,0.15)' : 'none'
               }}>
-                Print Receipt
+                {t('printReceipt')}
               </button>
             </div>
           </div>
@@ -385,10 +387,10 @@ export default function WaiterScreen({ user, onLogout }) {
             <div style={{ padding:'28px 24px 20px', fontFamily:'"DM Mono","Courier New",monospace', fontSize:11, lineHeight:1.8 }}>
               <div style={{ textAlign:'center', marginBottom:18 }}>
                 <div style={{ fontSize:16, fontWeight:900, letterSpacing:'-0.5px', textTransform:'uppercase' }}>
-                  Caffè Centro
+                  {settings?.cafe_name || 'CaféPOS'}
                 </div>
                 <div style={{ fontSize:9, color:'#94a3b8', letterSpacing:'0.2em', textTransform:'uppercase', marginTop:2 }}>
-                  Milano, Italy
+                  {settings?.address || ''}
                 </div>
               </div>
 
@@ -424,7 +426,7 @@ export default function WaiterScreen({ user, onLogout }) {
                 {user.name.split(' ')[0]} · {new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
               </div>
               <div style={{ textAlign:'center', marginTop:4, fontSize:9, color:'#cbd5e1', fontStyle:'italic' }}>
-                Grazie per la visita
+                {settings?.footer || t('grazie')}
               </div>
             </div>
 
@@ -434,7 +436,7 @@ export default function WaiterScreen({ user, onLogout }) {
                 border:'none', borderRadius:10, color:'#fff',
                 fontSize:11, fontWeight:800, textTransform:'uppercase',
                 letterSpacing:'0.12em', cursor:'pointer', fontFamily:'inherit'
-              }}>Done — Clear Table</button>
+              }}>{t('doneClearTable')}</button>
             </div>
           </div>
         </div>

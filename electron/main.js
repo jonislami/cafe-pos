@@ -240,3 +240,19 @@ ipcMain.handle('license:activate', (_, key) => {
 ipcMain.handle('license:info', () => {
   return license.getLicenseInfo()
 })
+
+// ── Settings ───────────────────────────────────────────
+
+ipcMain.handle('settings:all', () => {
+  const rows = db.query('SELECT * FROM settings')
+  const settings = {}
+  rows.forEach(r => { settings[r.key] = r.value })
+  return settings
+})
+
+ipcMain.handle('settings:update', (_, s) => {
+  for (const [key, value] of Object.entries(s)) {
+    db.run('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', [key, value])
+  }
+  return { success: true }
+})
