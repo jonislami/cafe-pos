@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useTranslation } from '../LanguageContext'
 
 export default function LicenseScreen({ onActivated, expiredInfo }) {
+  const { t } = useTranslation()
   const [key, setKey]       = useState('')
   const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
@@ -50,7 +52,7 @@ export default function LicenseScreen({ onActivated, expiredInfo }) {
             CaféPOS
           </div>
           <div style={{ fontSize:10, color:'#94a3b8', fontWeight:600, letterSpacing:'0.2em', textTransform:'uppercase', marginTop:4 }}>
-            License Activation
+            {t('licenseActivation')}
           </div>
         </div>
 
@@ -61,10 +63,10 @@ export default function LicenseScreen({ onActivated, expiredInfo }) {
             borderRadius:10, padding:'12px 16px', marginBottom:20,
             fontSize:12, color:'#ef4444'
           }}>
-            <div style={{ fontWeight:700, marginBottom:2 }}>License Expired</div>
+            <div style={{ fontWeight:700, marginBottom:2 }}>{t('licenseExpired')}</div>
             <div style={{ color:'#f87171' }}>
-              Your license expired on {expiredInfo.expiry}.<br/>
-              Please contact your provider for a new key.
+              {t('licenseExpired')} {expiredInfo.expiry}.<br/>
+              {t('contactProvider')}
             </div>
           </div>
         )}
@@ -76,7 +78,7 @@ export default function LicenseScreen({ onActivated, expiredInfo }) {
             borderRadius:10, padding:'12px 16px', marginBottom:24,
             fontSize:12, color:'#64748b', lineHeight:1.6
           }}>
-            Enter the license key provided by your software vendor to activate CaféPOS.
+            {t('enterKey')}
           </div>
         )}
 
@@ -85,7 +87,7 @@ export default function LicenseScreen({ onActivated, expiredInfo }) {
           <div style={{
             fontSize:10, fontWeight:700, color:'#94a3b8',
             textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:8
-          }}>License Key</div>
+          }}>{t('licenseKey')}</div>
           <input
             value={key}
             onChange={e => { setKey(e.target.value.toUpperCase()); setError('') }}
@@ -119,7 +121,7 @@ export default function LicenseScreen({ onActivated, expiredInfo }) {
             background:'#f0fdf4', padding:'10px', borderRadius:8,
             border:'1px solid #bbf7d0'
           }}>
-            License activated! Starting app...
+            {t('licenseActivatedMsg')}
           </div>
         )}
 
@@ -138,7 +140,7 @@ export default function LicenseScreen({ onActivated, expiredInfo }) {
             fontFamily:'inherit', transition:'all .15s'
           }}
         >
-          {loading ? 'Activating...' : success ? 'Activated!' : 'Activate License'}
+          {loading ? t('activating') : success ? t('activated') : t('activateLicense')}
         </button>
 
         {/* Contact */}
@@ -146,9 +148,9 @@ export default function LicenseScreen({ onActivated, expiredInfo }) {
           marginTop:24, textAlign:'center',
           fontSize:11, color:'#cbd5e1', lineHeight:1.6
         }}>
-          Need a license key?<br/>
+          {t('needKey')}<br/>
           <span style={{ color:'#94a3b8', fontWeight:600 }}>
-            Contact your software provider
+            {t('contactProvider')}
           </span>
         </div>
       </div>

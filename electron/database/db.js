@@ -65,6 +65,16 @@ function runMigrations() {
   } catch (e) {
     console.error('Migration (orders) failed:', e.message)
   }
+
+  // 4. Ensure language setting exists
+  try {
+    const lang = get('SELECT * FROM settings WHERE key = "language"')
+    if (!lang) {
+      db.run("INSERT INTO settings (key, value) VALUES ('language', 'en')")
+    }
+  } catch (e) {
+    console.error('Migration (settings language) failed:', e.message)
+  }
 }
 
 function saveDatabase(dbPath) {
@@ -166,7 +176,8 @@ function seedData() {
       ('cafe_name', 'Caffè Centro'),
       ('address',   'Via Roma 12, Milano'),
       ('vat_number','12345678901'),
-      ('footer',    'Grazie! Thank you!');
+      ('footer',    'Grazie! Thank you!'),
+      ('language',  'en');
   `)
 
   saveDatabase()

@@ -3,8 +3,10 @@ import LoginScreen   from './screens/LoginScreen'
 import WaiterScreen  from './screens/WaiterScreen'
 import AdminScreen   from './screens/AdminScreen'
 import LicenseScreen from './screens/LicenseScreen'
+import { useTranslation } from './LanguageContext'
 
 export default function App() {
+  const { t } = useTranslation()
   const [screen, setScreen]         = useState('checking')
   const [currentUser, setCurrentUser] = useState(null)
   const [licenseInfo, setLicenseInfo] = useState(null)
@@ -75,7 +77,7 @@ export default function App() {
           background:'#f8fafc', fontFamily:'Inter,system-ui,sans-serif',
           fontSize:13, color:'#94a3b8'
         }}>
-          Loading...
+          {t('loading')}
         </div>
       )}
 

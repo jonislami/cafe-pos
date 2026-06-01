@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from '../LanguageContext'
 
 export default function LoginScreen({ onLogin }) {
+  const { t } = useTranslation()
   const [pin, setPin]           = useState('')
   const [error, setError]       = useState(false)
   const [loading, setLoading]   = useState(false)
@@ -140,7 +142,7 @@ export default function LoginScreen({ onLogin }) {
           fontSize:10, color:'#94a3b8', fontWeight:600,
           letterSpacing:'0.2em', textTransform:'uppercase', marginTop:4
         }}>
-          Staff Access
+          {t('staffAccess')}
         </div>
       </div>
 
@@ -219,10 +221,10 @@ export default function LoginScreen({ onLogin }) {
             {/* Header */}
             <div style={{ marginBottom:24 }}>
               <div style={{ fontSize:16, fontWeight:800, color:'#0f172a', marginBottom:4 }}>
-                License Management
+                {t('licenseActivation')}
               </div>
               <div style={{ fontSize:12, color:'#94a3b8' }}>
-                Enter a license key or revoke key below.
+                {t('enterKey')}
               </div>
             </div>
 
@@ -231,7 +233,7 @@ export default function LoginScreen({ onLogin }) {
               <div style={{
                 fontSize:10, fontWeight:700, color:'#94a3b8',
                 textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:8
-              }}>License Key</div>
+              }}>{t('licenseKey')}</div>
               <input
                 value={revokeKey}
                 onChange={e => { setRevokeKey(e.target.value.toUpperCase()); setRevokeMsg('') }}
@@ -269,7 +271,7 @@ export default function LoginScreen({ onLogin }) {
                 color:'#fff', fontSize:11, fontWeight:700,
                 textTransform:'uppercase', letterSpacing:'0.08em',
                 cursor:'pointer', fontFamily:'inherit'
-              }}>Apply Key</button>
+              }}>{t('applyKey')}</button>
               <button onClick={() => {
                 setShowRevoke(false)
                 setRevokeKey('')
@@ -281,14 +283,14 @@ export default function LoginScreen({ onLogin }) {
                 borderRadius:10, color:'#64748b', fontSize:11, fontWeight:700,
                 textTransform:'uppercase', letterSpacing:'0.08em',
                 cursor:'pointer', fontFamily:'inherit'
-              }}>Cancel</button>
+              }}>{t('cancel')}</button>
             </div>
 
             <div style={{
               marginTop:16, fontSize:11, color:'#cbd5e1',
               textAlign:'center', lineHeight:1.6
             }}>
-              This panel is for authorized use only.
+              {t('authorizedUseOnly')}
             </div>
           </div>
         </div>
